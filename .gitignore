@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+.editorconfig
+.env
+.venv/
+.idea/
+.DS_Store

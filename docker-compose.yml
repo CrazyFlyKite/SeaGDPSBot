@@ -1,0 +1,10 @@
+version: '3.8'
+
+services:
+  seagdpsbot:
+    build: .
+    container_name: SeaGDPSBot
+    restart: always
+    volumes:
+      - .:/app
+    network_mode: host
