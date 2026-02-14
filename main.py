@@ -53,7 +53,7 @@ async def on_app_command_error(interaction: Interaction, error: AppCommandError)
 @bot.tree.command(name='info', description='Show information about the bot')
 @log_command
 async def info(interaction: Interaction) -> None:
-	await interaction.response.send_message(embed=embed(INFORMATION_MESSAGE), ephemeral=True)
+	await interaction.response.send_message(embed=embed(description=INFORMATION_MESSAGE), ephemeral=True)
 
 
 # Run

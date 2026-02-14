@@ -54,8 +54,8 @@ class AddGroup(Group, name='add'):
 			else:
 				audit_description += 'Pushing '
 
-			audit_description += f'\"**{pushed_25}**\" out of Top 25!'
-		else:
+			audit_description += f'\"**{pushed_25}**\" out of Top 25'
+		elif pushed_10 or pushed_25:
 			audit_description += '!'
 
 		await interaction.response.send_message(
