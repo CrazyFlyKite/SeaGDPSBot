@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.1.0 | 15.02.2026
+
+- Added level thumbnails
+- Added test bot support
+
 ## 1.0.1 | 14.02.2026
 
 - Fixed some minor bugs

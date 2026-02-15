@@ -1,13 +1,14 @@
 import logging
 
 from discord import Intents, Interaction, Game, Status
-from discord.app_commands import AppCommandError, MissingRole, MissingAnyRole, NoPrivateMessage,CommandOnCooldown
+from discord.app_commands import AppCommandError, MissingRole, MissingAnyRole, NoPrivateMessage, CommandOnCooldown
 from discord.ext.commands import Bot
 
 from commands.add_group import AddGroup
 from commands.edit_group import EditGroup
 from commands.move_group import MoveGroup
 from commands.remove_group import RemoveGroup
+from commands.set_group import SetGroup
 from decorators import log_command
 from embeds import embed, error_embed
 from setup_logging import setup_logging
@@ -62,6 +63,7 @@ def main() -> None:
 	bot.tree.add_command(RemoveGroup())
 	bot.tree.add_command(MoveGroup())
 	bot.tree.add_command(EditGroup())
+	bot.tree.add_command(SetGroup())
 	bot.run(TOKEN)
 
 

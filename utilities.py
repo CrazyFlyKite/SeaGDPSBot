@@ -15,9 +15,10 @@ PercentageInt: TypeAlias = Range[int, 1, 100]
 PlacementInt: TypeAlias = Range[int, 1]
 
 # Secrets
-TOKEN: Final[Optional[str]] = getenv('TOKEN')
+TOKEN: Final[Optional[str]] = getenv('LIVE_TOKEN') if getenv('ENV') == 'LIVE' else getenv('DEV_TOKEN')
 MYSQL_USER: Final[Optional[str]] = getenv('MYSQL_USER')
 MYSQL_PASSWORD: Final[Optional[str]] = getenv('MYSQL_PASSWORD')
+THUMBNAILS_PATH: Final[Optional[str]] = getenv('THUMBNAILS_PATH')
 
 # Checking IP
 IS_NAS: Final[bool] = platform.system() == 'Linux'
