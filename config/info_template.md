@@ -24,9 +24,9 @@ I manage the official SeaGDPS Demonlist.
 - `/edit victor` - Edit the % of a victor in the victors list
 
 - `/set thumbnail` - Add, remove or edit the thumbnail to a level
+- `/set showcase` - Add, remove or edit the showcase of a level
 
 ## More
 - **[Website](<https://crazyflykite.com/seagdps>)**
 - **[Developer](<https://discord.com/users/873920068571000833>)**
 - **[GitHub Repository](<https://github.com/CrazyFlyKite/SeaGDPSBot>)**
-- **[Website](<https://crazyflykite.com/seagdps>)**

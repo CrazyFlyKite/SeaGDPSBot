@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.2.0 | 17.02.2026
+
+- Added showcase videos
+
 ## 1.1.0 | 15.02.2026
 
 - Added level thumbnails

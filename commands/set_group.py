@@ -49,3 +49,36 @@ class SetGroup(Group, name='set'):
 			)
 		except Exception as e:
 			await interaction.response.send_message(embed=error_embed(f'System Error: {str(e)}'), ephemeral=True)
+
+	@command(name='showcase', description='Add, remove or edit the showcase of a level')
+	@checks.has_any_role(*MODERATORS)
+	@guild_only()
+	@limit_command
+	@rename(level_id='id')
+	@autocomplete(level_id=level_autocomplete)
+	@smart_describe()
+	@log_command
+	async def set_showcase(self, interaction: Interaction, level_id: LevelIDInt, showcase: Optional[str] = None) -> None:
+		if not (result := await execute_get('SELECT name, publisher, showcase FROM demonlist WHERE id = %s', (level_id,))):
+			return await interaction.response.send_message(embed=error_embed('Level not found!'), ephemeral=True)
+
+		name, publisher, current_showcase = result[0]
+
+		if not showcase:
+			if not current_showcase:
+				return await interaction.response.send_message(
+					embed=error_embed(f'\"**{name}**\" by {publisher} already has no showcase video!'),
+					ephemeral=True
+				)
+
+			await execute_write('UPDATE demonlist SET showcase = %s WHERE id = %s', (None, level_id))
+			return await interaction.response.send_message(
+				embed=success_embed(f'Removed showcase for \"**{name}**\" by {publisher}!'),
+				ephemeral=False
+			)
+
+		if not ('youtube.com/' in showcase or 'youtu.be/' in showcase):
+			return await interaction.response.send_message(embed=error_embed('Please provide a valid **YouTube** link!'), ephemeral=True)
+
+		await execute_write('UPDATE demonlist SET showcase = %s WHERE id = %s', (showcase, level_id))
+		await interaction.response.send_message(embed=success_embed(f'Updated the showcase for \"**{name}**\" by {publisher}!'), ephemeral=False)
