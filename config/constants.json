@@ -26,7 +26,6 @@
 		"new_placement": "New placement on the Demonlist",
 		"name": "Level name",
 		"new_name": "New level name",
-		"creators": "Level creators (separated by ,)",
 		"creator": "Level creator",
 		"publisher": "Level publisher",
 		"verifier": "Level verifier",
@@ -38,10 +37,10 @@
 		"list_percentage": "List %",
 		"new_list_percentage": "New list %",
 		"percentage": "%",
-		"new_percentage": "New %",
 		"player_name": "Player name",
 		"old_player_name": "Old player name",
 		"new_player_name": "New player name",
-		"thumbnail": "Level humbnail"
+		"thumbnail": "Level thumbnail",
+		"showcase": "Level showcase (YouTube link)"
 	}
 }

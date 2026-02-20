@@ -44,8 +44,6 @@ async def on_app_command_error(interaction: Interaction, error: AppCommandError)
 		await interaction.response.send_message(embed=error_embed('You don\'t have the required role to use this command!'), ephemeral=True)
 	elif isinstance(error, NoPrivateMessage):
 		await interaction.response.send_message(embed=error_embed('You can\'t use this command in Direct Messages!'), ephemeral=True)
-	elif isinstance(error, CommandOnCooldown):
-		await interaction.response.send_message(embed=error_embed('You can\'t use this command that fast!'), ephemeral=True)
 	else:
 		logging.critical(f'Command Error: {error}')
 

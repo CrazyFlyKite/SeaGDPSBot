@@ -1,10 +1,10 @@
-from discord import Interaction, Colour
+from discord import Interaction
 from discord.app_commands import checks, command, guild_only, autocomplete, rename, Group
 
 from database import execute_get, execute_write
 from decorators import log_command, limit_command, smart_describe
-from embeds import embed, success_embed, error_embed
-from help_functions import level_autocomplete
+from embeds import success_embed, error_embed
+from help_functions import level_autocomplete, player_name_autocomplete
 from utilities import *
 
 
@@ -18,11 +18,21 @@ class RemoveGroup(Group, name='remove'):
 	@smart_describe()
 	@log_command
 	async def remove_level(self, interaction: Interaction, level_id: int) -> None:
-		if not (result := await execute_get('SELECT placement, name, publisher FROM demonlist WHERE id = %s', (level_id,))):
+		result = await execute_get('''
+	    SELECT d.placement, d.level_name, p.player_name
+	    FROM demonlist d
+	    LEFT JOIN creators c ON d.level_id = c.level_id AND c.is_publisher = TRUE
+	    LEFT JOIN players p ON c.player_id = p.player_id
+	    WHERE d.level_id = %s
+	    ''', (level_id,))
+
+		if not result:
 			return await interaction.response.send_message(embed=error_embed('Level not found!'), ephemeral=True)
 
 		placement, name, publisher = result[0]
-		await execute_write('DELETE FROM demonlist WHERE id = %s', (level_id,))
+		publisher = publisher or 'Unknown'
+
+		await execute_write('DELETE FROM demonlist WHERE level_id = %s', (level_id,))
 		await execute_write('UPDATE demonlist SET placement = placement - 1 WHERE placement > %s ORDER BY placement ASC', (placement,))
 		await interaction.response.send_message(embed=success_embed(f'\"**{name}**\" by {publisher} removed from the Demonlist!'))
 
@@ -31,52 +41,81 @@ class RemoveGroup(Group, name='remove'):
 	@guild_only()
 	@limit_command
 	@rename(level_id='id')
-	@autocomplete(level_id=level_autocomplete)
+	@autocomplete(level_id=level_autocomplete, creator=player_name_autocomplete)
 	@smart_describe()
 	@log_command
 	async def remove_creator(self, interaction: Interaction, level_id: LevelIDInt, creator: str) -> None:
-		if not (result := await execute_get('SELECT name, publisher, creators FROM demonlist WHERE id = %s', (level_id,))):
+		result = await execute_get('''
+        SELECT d.level_name, p.player_name
+        FROM demonlist d
+        LEFT JOIN creators c ON d.level_id = c.level_id AND c.is_publisher = 1
+        LEFT JOIN players p ON c.player_id = p.player_id
+        WHERE d.level_id = %s
+	    ''', (level_id,))
+
+		if not result:
 			return await interaction.response.send_message(embed=error_embed('Level not found!'), ephemeral=True)
 
-		name, publisher, creators = result[0]
-		creators = json.loads(creators)
-		actual_creator: Optional[str] = next((c for c in creators if c.lower() == creator.lower()), None)
+		level_name, publisher = result[0]
 
-		if not actual_creator:
-			return await interaction.response.send_message(embed=error_embed('This creator is not in the list!'), ephemeral=True)
+		if not (player_data := await execute_get('SELECT player_id, player_name FROM players WHERE player_name = %s', (creator,))):
+			return await interaction.response.send_message(embed=error_embed(f'Player **{creator}** not found!'), ephemeral=True)
 
-		if len(creators) <= 1:
-			return await interaction.response.send_message(embed=error_embed('You cannot remove the only creator!'), ephemeral=True)
+		player_id, player_name = player_data[0]
+		is_publisher = await execute_get('SELECT is_publisher FROM creators WHERE level_id = %s AND player_id = %s', (level_id, player_id))
 
-		creators.remove(actual_creator)
+		if not is_publisher:
+			return await interaction.response.send_message(embed=error_embed(f'**{player_name}** is not a creator of this level!'), ephemeral=True)
 
-		await execute_write(
-			'UPDATE demonlist SET creators = %s, publisher = %s WHERE id = %s',
-			(json.dumps(creators), creators[0] if actual_creator == publisher else publisher, level_id)
-		)
-		await interaction.response.send_message(embed=success_embed(f'Removed a creator **{actual_creator}** from \"**{name}**\" by {publisher}!'))
+		if is_publisher[0][0]:
+			return await interaction.response.send_message(
+				embed=error_embed(f'**{player_name}** is the publisher! You must set a new publisher before removing.'),
+				ephemeral=True
+			)
 
-	@command(name='victor', description='Removes a victor from the victors list')
+		await execute_write('DELETE FROM creators WHERE level_id = %s AND player_id = %s', (level_id, player_id))
+		await interaction.response.send_message(embed=success_embed(f'Removed creator **{player_name}** from \"**{level_name}**\" by {publisher}!'))
+
+	@command(name='victor', description='Remove a victor from a level')
 	@checks.has_any_role(*MODERATORS)
 	@guild_only()
 	@limit_command
 	@rename(level_id='id')
-	@autocomplete(level_id=level_autocomplete)
+	@autocomplete(level_id=level_autocomplete, player_name=player_name_autocomplete)
 	@smart_describe()
 	@log_command
 	async def remove_victor(self, interaction: Interaction, level_id: LevelIDInt, player_name: str) -> None:
-		if not (result := await execute_get('SELECT name, publisher, victors FROM demonlist WHERE id = %s', (level_id,))):
+		result = await execute_get('''
+		SELECT d.level_name, p.player_name
+        FROM demonlist d
+        LEFT JOIN creators c ON d.level_id = c.level_id AND c.is_publisher = 1
+        LEFT JOIN players p ON c.player_id = p.player_id
+        WHERE d.level_id = %s
+        ''', (level_id,))
+
+		if not result:
 			return await interaction.response.send_message(embed=error_embed('Level not found!'), ephemeral=True)
 
-		name, publisher, victors = result[0]
-		victors = json.loads(victors)
-		actual_player: Optional[Dict[str, str | int]] = next((v for v in victors if v['name'].lower() == player_name.lower()), None)
+		name, publisher = result[0]
 
-		if player_name.lower() not in [player.get('name').lower() for player in victors]:
-			return await interaction.response.send_message(embed=error_embed('This victor is not in the list!'), ephemeral=True)
+		if not (player_data := await execute_get('SELECT player_id FROM players WHERE player_name = %s', (player_name,))):
+			return await interaction.response.send_message(
+				embed=error_embed(f'Player **{player_name}** is not registered yet! Use `/add player` first .'),
+				ephemeral=True
+			)
 
-		victors.remove(actual_player)
-		await execute_write('UPDATE demonlist SET victors = %s WHERE id = %s', (json.dumps(victors), level_id))
+		record_check = await execute_get('SELECT is_verifier FROM records WHERE level_id = %s AND player_id = %s', (level_id, player_data[0][0]))
+
+		if not record_check:
+			return await interaction.response.send_message(
+				embed=error_embed(f'**{player_name}** doesn\'t have a record on \"**{name}**\" by {publisher}!'),
+				ephemeral=True
+			)
+
+		if record_check[0][0] == 1:
+			return await interaction.response.send_message(embed=error_embed('You can\'t remove the verifier!'), ephemeral=True)
+
+		await execute_write('DELETE FROM records WHERE level_id = %s AND player_id = %s', (level_id, player_data[0][0]))
 		await interaction.response.send_message(
-			embed=success_embed(f'Removed a victor **{actual_player.get('name')}** from \"**{name}**\" by {publisher}!')
+			embed=success_embed(f'Removed a victor **{player_name}** from \"**{name}**\" by {publisher}!')
 		)

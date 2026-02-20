@@ -6,6 +6,12 @@ from utilities import *
 
 async def level_autocomplete(interaction: Interaction, current: str) -> List[Choice[int]]:
 	return [
-		Choice(name=name, value=level_id) for level_id, name in
-		await execute_get('SELECT id, name FROM demonlist WHERE name LIKE %s ORDER BY placement LIMIT 25', (f'%{current}%',))
+		Choice(name=player_name, value=level_id) for level_id, player_name in
+		await execute_get('SELECT level_id, level_name FROM demonlist WHERE level_name LIKE %s ORDER BY placement LIMIT 25', (f'%{current}%',))
+	]
+
+async def player_name_autocomplete(interaction: Interaction, current: str) -> List[Choice[str]]:
+	return [
+		Choice(name=player_name, value=player_name) for (player_name,) in
+		await execute_get('SELECT player_name FROM players WHERE player_name LIKE %s ORDER BY player_name LIMIT 25', (f'%{current}%',))
 	]

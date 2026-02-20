@@ -18,7 +18,15 @@ class MoveGroup(Group, name='move'):
 	@smart_describe()
 	@log_command
 	async def move_level(self, interaction: Interaction, level_id: LevelIDInt, new_placement: PlacementInt) -> None:
-		if not (result := await execute_get('SELECT placement, name, publisher FROM demonlist WHERE id = %s', (level_id,))):
+		result = await execute_get('''
+		SELECT d.placement, d.level_name, p.player_name
+	    FROM demonlist d
+	    LEFT JOIN creators c ON d.level_id = c.level_id AND c.is_publisher = TRUE
+	    LEFT JOIN players p ON c.player_id = p.player_id
+	    WHERE d.level_id = %s
+	    ''', (level_id,))
+
+		if not result:
 			return await interaction.response.send_message(embed=error_embed('Level not found!'), ephemeral=True)
 
 		old_placement, name, publisher = result[0]
@@ -34,7 +42,7 @@ class MoveGroup(Group, name='move'):
 				ephemeral=True
 			)
 
-		await execute_write('UPDATE demonlist SET placement = 0 WHERE id = %s', (level_id,))
+		await execute_write('UPDATE demonlist SET placement = 0 WHERE level_id = %s', (level_id,))
 
 		if new_placement < old_placement:
 			await execute_write('''
@@ -53,7 +61,7 @@ class MoveGroup(Group, name='move'):
 			ORDER BY placement ASC;
 			''', (old_placement, new_placement))
 
-		await execute_write('UPDATE demonlist SET placement = %s WHERE id = %s', (new_placement, level_id))
+		await execute_write('UPDATE demonlist SET placement = %s WHERE level_id = %s', (new_placement, level_id))
 		await interaction.response.send_message(
 			embed=success_embed(f'\"**{name}**\" by {publisher} moved from **#{old_placement}** to **#{new_placement}**!')
 		)

@@ -20,7 +20,15 @@ class SetGroup(Group, name='set'):
 	@smart_describe()
 	@log_command
 	async def set_thumbnail(self, interaction: Interaction, level_id: LevelIDInt, thumbnail: Optional[Attachment] = None) -> None:
-		if not (result := await execute_get('SELECT name, publisher, has_thumbnail FROM demonlist WHERE id = %s', (level_id,))):
+		result = await execute_get('''
+		SELECT d.level_name, p.player_name, d.has_thumbnail
+        FROM demonlist d
+        LEFT JOIN creators c ON d.level_id = c.level_id AND c.is_publisher = 1
+        LEFT JOIN players p ON c.player_id = p.player_id
+        WHERE d.level_id = %s
+        ''', (level_id,))
+
+		if not result:
 			return await interaction.response.send_message(embed=error_embed('Level not found!'), ephemeral=True)
 
 		name, publisher, has_thumbnail = result[0]
@@ -29,7 +37,7 @@ class SetGroup(Group, name='set'):
 		if not thumbnail:
 			if os.path.exists(file_path):
 				os.remove(file_path)
-				await execute_write('UPDATE demonlist SET has_thumbnail = %s WHERE id = %s', (False, level_id))
+				await execute_write('UPDATE demonlist SET has_thumbnail = %s WHERE level_id = %s', (False, level_id))
 				return await interaction.response.send_message(
 					embed=success_embed(f'Removed thumbnail for \"**{name}**\" by {publisher}!'),
 					ephemeral=False
@@ -42,13 +50,10 @@ class SetGroup(Group, name='set'):
 
 		try:
 			await thumbnail.save(file_path)
-			await execute_write('UPDATE demonlist SET has_thumbnail = %s WHERE id = %s', (True, level_id))
-			await interaction.response.send_message(
-				embed=success_embed(f'Successfully set a thumbnail for \"**{name}**\" by {publisher}!'),
-				ephemeral=False
-			)
-		except Exception as e:
-			await interaction.response.send_message(embed=error_embed(f'System Error: {str(e)}'), ephemeral=True)
+			await execute_write('UPDATE demonlist SET has_thumbnail = %s WHERE level_id = %s', (True, level_id))
+			await interaction.response.send_message(embed=success_embed(f'Set a thumbnail for \"**{name}**\" by {publisher}!'), ephemeral=False)
+		except Exception as exception:
+			await interaction.response.send_message(embed=error_embed(f'System Error: {str(exception)}'), ephemeral=True)
 
 	@command(name='showcase', description='Add, remove or edit the showcase of a level')
 	@checks.has_any_role(*MODERATORS)
@@ -59,7 +64,15 @@ class SetGroup(Group, name='set'):
 	@smart_describe()
 	@log_command
 	async def set_showcase(self, interaction: Interaction, level_id: LevelIDInt, showcase: Optional[str] = None) -> None:
-		if not (result := await execute_get('SELECT name, publisher, showcase FROM demonlist WHERE id = %s', (level_id,))):
+		result = await execute_get('''
+		SELECT d.level_name, p.player_name, d.showcase
+        FROM demonlist d
+        LEFT JOIN creators c ON d.level_id = c.level_id AND c.is_publisher = 1
+        LEFT JOIN players p ON c.player_id = p.player_id
+        WHERE d.level_id = %s
+        ''', (level_id,))
+
+		if not result:
 			return await interaction.response.send_message(embed=error_embed('Level not found!'), ephemeral=True)
 
 		name, publisher, current_showcase = result[0]
@@ -71,7 +84,7 @@ class SetGroup(Group, name='set'):
 					ephemeral=True
 				)
 
-			await execute_write('UPDATE demonlist SET showcase = %s WHERE id = %s', (None, level_id))
+			await execute_write('UPDATE demonlist SET showcase = %s WHERE level_id = %s', (None, level_id))
 			return await interaction.response.send_message(
 				embed=success_embed(f'Removed showcase for \"**{name}**\" by {publisher}!'),
 				ephemeral=False
@@ -80,5 +93,5 @@ class SetGroup(Group, name='set'):
 		if not ('youtube.com/' in showcase or 'youtu.be/' in showcase):
 			return await interaction.response.send_message(embed=error_embed('Please provide a valid **YouTube** link!'), ephemeral=True)
 
-		await execute_write('UPDATE demonlist SET showcase = %s WHERE id = %s', (showcase, level_id))
+		await execute_write('UPDATE demonlist SET showcase = %s WHERE level_id = %s', (showcase, level_id))
 		await interaction.response.send_message(embed=success_embed(f'Updated the showcase for \"**{name}**\" by {publisher}!'), ephemeral=False)

@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.0.0 | 20.02.2026
+
+- Completely rebuilt the database from scratch
+
 ## 1.2.0 | 17.02.2026
 
 - Added showcase videos

@@ -35,7 +35,7 @@ def limit_command(command: Callable) -> Callable:
 		except IndexError:
 			interaction = args[0]
 
-		if interaction.channel.id in [channel[0] for channel in await execute_get('SELECT channel FROM settings')]:
+		if interaction.channel.id in [channel[0] for channel in await execute_get('SELECT channel_id FROM settings')]:
 			await command(*args, **kwargs)
 		else:
 			await interaction.response.send_message(embed=error_embed('You cannot use my commands in this channel!'), ephemeral=True)
