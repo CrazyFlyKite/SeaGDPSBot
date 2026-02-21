@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.0.1 | 21.02.2026
+
+- Fixed the thumbnail error
+
 ## 2.0.0 | 20.02.2026
 
 - Completely rebuilt the database from scratch

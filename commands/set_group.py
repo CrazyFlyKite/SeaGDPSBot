@@ -20,6 +20,8 @@ class SetGroup(Group, name='set'):
 	@smart_describe()
 	@log_command
 	async def set_thumbnail(self, interaction: Interaction, level_id: LevelIDInt, thumbnail: Optional[Attachment] = None) -> None:
+		await interaction.response.defer()
+
 		result = await execute_get('''
 		SELECT d.level_name, p.player_name, d.has_thumbnail
         FROM demonlist d
@@ -29,7 +31,7 @@ class SetGroup(Group, name='set'):
         ''', (level_id,))
 
 		if not result:
-			return await interaction.response.send_message(embed=error_embed('Level not found!'), ephemeral=True)
+			return await interaction.followup.send(embed=error_embed('Level not found!'), ephemeral=True)
 
 		name, publisher, has_thumbnail = result[0]
 		file_path: str = os.path.join(THUMBNAILS_PATH, f'{level_id}.jpg')
@@ -38,22 +40,22 @@ class SetGroup(Group, name='set'):
 			if os.path.exists(file_path):
 				os.remove(file_path)
 				await execute_write('UPDATE demonlist SET has_thumbnail = %s WHERE level_id = %s', (False, level_id))
-				return await interaction.response.send_message(
+				return await interaction.followup.send(
 					embed=success_embed(f'Removed thumbnail for \"**{name}**\" by {publisher}!'),
 					ephemeral=False
 				)
 			else:
-				return await interaction.response.send_message(embed=error_embed(f'**{name}** has no thumbnail to remove!'), ephemeral=True)
+				return await interaction.followup.send(embed=error_embed(f'**{name}** has no thumbnail to remove!'), ephemeral=True)
 
 		if not (thumbnail.filename.lower().endswith('.jpg') and (thumbnail.content_type == 'image/jpeg')):
-			return await interaction.response.send_message(embed=error_embed('Only **.jpg** files are allowed!'), ephemeral=True)
+			return await interaction.followup.send(embed=error_embed('Only **.jpg** files are allowed!'), ephemeral=True)
 
 		try:
 			await thumbnail.save(file_path)
 			await execute_write('UPDATE demonlist SET has_thumbnail = %s WHERE level_id = %s', (True, level_id))
-			await interaction.response.send_message(embed=success_embed(f'Set a thumbnail for \"**{name}**\" by {publisher}!'), ephemeral=False)
+			await interaction.followup.send(embed=success_embed(f'Set a thumbnail for \"**{name}**\" by {publisher}!'), ephemeral=False)
 		except Exception as exception:
-			await interaction.response.send_message(embed=error_embed(f'System Error: {str(exception)}'), ephemeral=True)
+			await interaction.followup.send(embed=error_embed(f'System Error: {str(exception)}'), ephemeral=True)
 
 	@command(name='showcase', description='Add, remove or edit the showcase of a level')
 	@checks.has_any_role(*MODERATORS)
