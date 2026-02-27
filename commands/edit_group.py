@@ -4,7 +4,7 @@ from discord.app_commands import checks, choices, command, guild_only, autocompl
 from database import execute_get, execute_write
 from decorators import log_command, limit_command, smart_describe
 from embeds import success_embed, error_embed
-from help_functions import level_autocomplete, player_name_autocomplete
+from help_functions import level_autocomplete, player_name_autocomplete, country_autocomplete
 from utilities import *
 
 
@@ -241,3 +241,25 @@ class EditGroup(Group, name='edit'):
 
 		await execute_write('UPDATE players SET player_name = %s WHERE player_id = %s', (new_player_name, player_data[0][0]))
 		await interaction.response.send_message(embed=success_embed(f'Renamed **{old_player_name}** to **{new_player_name}**!'))
+
+	@command(name='player_nationality', description='Edit a player\'s nationality')
+	@checks.has_any_role(*MODERATORS)
+	@guild_only()
+	@limit_command
+	@autocomplete(player_name=player_name_autocomplete, player_nationality=country_autocomplete)
+	@limit_command
+	@smart_describe()
+	@log_command
+	async def edit_player_nationality(self, interaction: Interaction, player_name: str, player_nationality: str) -> None:
+		player_data = await execute_get('SELECT player_id FROM players WHERE player_name = %s', (player_name,))
+
+		if not player_data:
+			return await interaction.response.send_message(embed=error_embed(f'Player **{player_name}** not found!'), ephemeral=True)
+
+		if player_nationality and player_nationality not in COUNTRIES.values():
+			return await interaction.response.send_message(embed=error_embed('Select a country from the list!'), ephemeral=True)
+
+		country_name: str = next((name for name, code in COUNTRIES.items() if code == player_nationality))
+
+		await execute_write('UPDATE players SET nationality = %s WHERE player_id = %s', (player_nationality, player_data[0][0]))
+		await interaction.response.send_message(embed=success_embed(f'The nationality of **{player_name}** changed to **{country_name}**!'))

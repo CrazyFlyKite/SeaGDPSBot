@@ -37,3 +37,6 @@ DESCRIBED_PARAMETERS: Final[Dict[str, str]] = config.get('described_parameters',
 
 with open('config/info_template.md', 'r', encoding='utf-8') as file:
 	INFORMATION_MESSAGE: Final[str] = file.read()
+
+with open('config/countries.json', 'r', encoding='utf-8') as file:
+	COUNTRIES: Final[Dict[str, str]] = json.load(file)

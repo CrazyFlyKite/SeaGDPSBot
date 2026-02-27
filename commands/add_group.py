@@ -6,7 +6,7 @@ from discord.app_commands import checks, choices, command, guild_only, autocompl
 from database import execute_get, execute_write
 from decorators import log_command, limit_command, smart_describe
 from embeds import embed, success_embed, error_embed
-from help_functions import level_autocomplete, player_name_autocomplete
+from help_functions import level_autocomplete, player_name_autocomplete, country_autocomplete
 from utilities import *
 
 
@@ -181,11 +181,15 @@ class AddGroup(Group, name='add'):
 	@checks.has_any_role(*MODERATORS)
 	@guild_only()
 	@limit_command
+	@autocomplete(player_nationality=country_autocomplete)
 	@smart_describe()
 	@log_command
-	async def add_player(self, interaction: Interaction, player_name: str) -> None:
+	async def add_player(self, interaction: Interaction, player_name: str, player_nationality: Optional[str] = None) -> None:
 		if existing := await execute_get('SELECT player_name FROM players WHERE LOWER(player_name) = LOWER(%s)', (player_name,)):
 			return await interaction.response.send_message(embed=error_embed(f'Player **{player_name}** is already registered!'), ephemeral=True)
 
-		await execute_write('INSERT INTO players (player_name) VALUES (%s)', (player_name,))
+		if player_nationality and player_nationality not in COUNTRIES.values():
+			return await interaction.response.send_message(embed=error_embed('Select a country from the list!'), ephemeral=True)
+
+		await execute_write('INSERT INTO players (player_name, player_nationality) VALUES (%s, %s)', (player_name, player_nationality))
 		await interaction.response.send_message(embed=success_embed(f'New player **{player_name}** registered!'))

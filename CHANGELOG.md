@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.1.0 | 27.02.2026
+
+- Added nationality functionality
+
 ## 2.0.1 | 21.02.2026
 
 - Fixed the thumbnail error
