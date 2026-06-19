@@ -45,8 +45,6 @@ def limit_command(command: Callable) -> Callable:
 
 def smart_describe() -> Callable:
 	def decorator(command: Callable) -> Callable:
-		return describe(**{
-			key: value for key, value in DESCRIBED_PARAMETERS.items() if key in signature(command).parameters
-		})(command)
+		return describe(**{key: value for key, value in DESCRIBED_PARAMETERS.items() if key in signature(command).parameters})(command)
 
 	return decorator

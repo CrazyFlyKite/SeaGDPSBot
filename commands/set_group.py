@@ -1,4 +1,5 @@
 import os
+from typing import Optional
 
 from discord import Interaction, Attachment
 from discord.app_commands import checks, command, guild_only, autocomplete, rename, Group
@@ -40,10 +41,7 @@ class SetGroup(Group, name='set'):
 			if os.path.exists(file_path):
 				os.remove(file_path)
 				await execute_write('UPDATE demonlist SET has_thumbnail = %s WHERE level_id = %s', (False, level_id))
-				return await interaction.followup.send(
-					embed=success_embed(f'Removed thumbnail for \"**{name}**\" by {publisher}!'),
-					ephemeral=False
-				)
+				return await interaction.followup.send(embed=success_embed(f'Removed thumbnail for \"**{name}**\" by {publisher}!'), ephemeral=False)
 			else:
 				return await interaction.followup.send(embed=error_embed(f'**{name}** has no thumbnail to remove!'), ephemeral=True)
 
@@ -92,7 +90,7 @@ class SetGroup(Group, name='set'):
 				ephemeral=False
 			)
 
-		if not ('youtube.com/' in showcase or 'youtu.be/' in showcase):
+		if not ('https://youtube.com/' in showcase or 'https://youtu.be/' in showcase):
 			return await interaction.response.send_message(embed=error_embed('Please provide a valid **YouTube** link!'), ephemeral=True)
 
 		await execute_write('UPDATE demonlist SET showcase = %s WHERE level_id = %s', (showcase, level_id))

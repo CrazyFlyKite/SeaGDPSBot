@@ -1,7 +1,7 @@
 import logging
 
 from discord import Intents, Interaction, Game, Status
-from discord.app_commands import AppCommandError, MissingRole, MissingAnyRole, NoPrivateMessage, CommandOnCooldown
+from discord.app_commands import AppCommandError, MissingRole, MissingAnyRole, NoPrivateMessage
 from discord.ext.commands import Bot
 
 from commands.add_group import AddGroup

@@ -37,10 +37,7 @@ class MoveGroup(Group, name='move'):
 		max_placement: int = (await execute_get('SELECT MAX(placement) FROM demonlist'))[0][0]
 
 		if not (1 <= new_placement <= max_placement):
-			return await interaction.response.send_message(
-				embed=error_embed(f'Placement must be between **1** and **{max_placement}**!'),
-				ephemeral=True
-			)
+			return await interaction.response.send_message(embed=error_embed(f'Placement must be between **1** and **{max_placement}**!'), ephemeral=True)
 
 		await execute_write('UPDATE demonlist SET placement = 0 WHERE level_id = %s', (level_id,))
 
@@ -62,6 +59,4 @@ class MoveGroup(Group, name='move'):
 			''', (old_placement, new_placement))
 
 		await execute_write('UPDATE demonlist SET placement = %s WHERE level_id = %s', (new_placement, level_id))
-		await interaction.response.send_message(
-			embed=success_embed(f'\"**{name}**\" by {publisher} moved from **#{old_placement}** to **#{new_placement}**!')
-		)
+		await interaction.response.send_message(embed=success_embed(f'\"**{name}**\" by {publisher} moved from **#{old_placement}** to **#{new_placement}**!'))

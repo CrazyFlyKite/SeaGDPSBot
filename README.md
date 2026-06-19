@@ -5,8 +5,8 @@
 ![Python Version](https://img.shields.io/badge/Python-3.12%2B-blue)
 
 ![discord](https://img.shields.io/badge/discord-2.3.2%2B-blue)
-![mysql-connector-python](https://img.shields.io/badge/mysql-9.2.0%2B-red)
-![python-dotenv](https://img.shields.io/badge/dotenv-1.0.0%2B-green)
+![mysql-connector-python](https://img.shields.io/badge/mysql--connector--python-9.7.0%2B-red)
+![python-dotenv](https://img.shields.io/badge/python--dotenv-1.2.1%2B-green)
 
 ## Introduction
 
@@ -27,15 +27,16 @@
 - [`setup_logging.py`](setup_logging.py) - Enhanced terminal logging
 
 
-- [`comnands/add_group.py`](commands/add_group.py) - Commands for adding information to the database
-- [`comnands/remove_group.py`](commands/remove_group.py) - Commands for removing information from the database
-- [`comnands/move_group.py`](commands/move_group.py) - Commands for moving information in the database
-- [`comnands/edit_group.py`](commands/edit_group.py) - Commands for editing information in the database
+- [`commands/add_group.py`](commands/add_group.py) - Commands for adding information to the database
+- [`commands/remove_group.py`](commands/remove_group.py) - Commands for removing information from the database
+- [`commands/move_group.py`](commands/move_group.py) - Commands for moving information in the database
+- [`commands/edit_group.py`](commands/edit_group.py) - Commands for editing information in the database
+- [`commands/set_group.py`](commands/set_group.py) - Commands for adding, removing and editing information in the database all at the same time
 
 ## Host
 
-`docker-compose.yml` and `Dockerfile` are necessary, because the bot is hosted on my Synology NAS. `utilities.py` also has
-platform detection functionality.
+[`docker-compose.yml`](docker-compose.yml) and [`Dockerfile`](Dockerfile) are necessary, because the bot is hosted on my Synology NAS.
+[`utilities.py`](utilities.py) also has platform detection functionality.
 
 ## .env
 

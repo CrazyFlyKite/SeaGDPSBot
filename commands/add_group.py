@@ -1,4 +1,4 @@
-from typing import Tuple
+from typing import Tuple, Optional
 
 from discord import Interaction, Colour
 from discord.app_commands import checks, choices, command, guild_only, autocomplete, rename, Group
@@ -31,24 +31,15 @@ class AddGroup(Group, name='add'):
 		verifier_data: List[str] = await execute_get('SELECT player_id FROM players WHERE player_name = %s', (verifier,))
 
 		if not publisher_data:
-			return await interaction.response.send_message(
-				embed=error_embed(f'The publisher isn\'t registered yet! Use `/add player` first.'),
-				ephemeral=True
-			)
+			return await interaction.response.send_message(embed=error_embed(f'The publisher isn\'t registered yet! Use `/add player` first.'), ephemeral=True)
 
 		if not verifier_data:
-			return await interaction.response.send_message(
-				embed=error_embed(f'The verifier isn\'t registered yet! Use `/add player` first.'),
-				ephemeral=True
-			)
+			return await interaction.response.send_message(embed=error_embed(f'The verifier isn\'t registered yet! Use `/add player` first.'), ephemeral=True)
 
 		max_placement: int = (await execute_get('SELECT MAX(placement) FROM demonlist') or 0)[0][0] + 1
 
 		if not (1 <= placement <= max_placement):
-			return await interaction.response.send_message(
-				embed=error_embed(f'The placement be between **1** and **{max_placement}**!'),
-				ephemeral=True
-			)
+			return await interaction.response.send_message(embed=error_embed(f'The placement be between **1** and **{max_placement}**!'), ephemeral=True)
 
 		await execute_write('UPDATE demonlist SET placement = placement + 1 WHERE placement >= %s ORDER BY placement DESC', (placement,))
 		await execute_write(
@@ -108,18 +99,12 @@ class AddGroup(Group, name='add'):
 		level_name, publisher = result[0]
 
 		if not (player_data := await execute_get('SELECT player_id, player_name FROM players WHERE player_name = %s', (creator,))):
-			return await interaction.response.send_message(
-				embed=error_embed(f'Player **{creator}** is not registered yet! Use `/add player` first.'),
-				ephemeral=True
-			)
+			return await interaction.response.send_message(embed=error_embed(f'Player **{creator}** is not registered yet! Use `/add player` first.'), ephemeral=True)
 
 		player_id, player_name = player_data[0]
 
 		if existing := await execute_get('SELECT is_publisher FROM creators WHERE level_id = %s AND player_id = %s', (level_id, player_id)):
-			return await interaction.response.send_message(
-				embed=error_embed(f'**{player_name}** is {'the publisher' if existing[0][0] else 'already a creator'} of this level!'),
-				ephemeral=True
-			)
+			return await interaction.response.send_message(embed=error_embed(f'**{player_name}** is {'the publisher' if existing[0][0] else 'already a creator'} of this level!'), ephemeral=True)
 
 		await execute_write('INSERT INTO creators (level_id, player_id, is_publisher) VALUES (%s, %s, 0)', (level_id, player_id))
 		await interaction.response.send_message(embed=success_embed(f'Added **{player_name}** as a creator of \"**{level_name}**\" by {publisher}!'))
@@ -147,24 +132,15 @@ class AddGroup(Group, name='add'):
 		level_name, publisher, list_percentage = result[0]
 
 		if percentage < list_percentage:
-			return await interaction.response.send_message(
-				embed=error_embed(f'The % cannot be less than the list % (**{list_percentage}%**)!'),
-				ephemeral=True
-			)
+			return await interaction.response.send_message(embed=error_embed(f'The % cannot be less than the list % (**{list_percentage}%**)!'), ephemeral=True)
 
 		if not (player_data := await execute_get('SELECT player_id FROM players WHERE player_name = %s', (player_name,))):
-			return await interaction.response.send_message(
-				embed=error_embed(f'Player **{player_name}** is not registered yet! Use `/add player` first :)'),
-				ephemeral=True
-			)
+			return await interaction.response.send_message(embed=error_embed(f'Player **{player_name}** is not registered yet! Use `/add player` first :)'), ephemeral=True)
 
 		record_status = await execute_get('SELECT is_verifier FROM records WHERE level_id = %s AND player_id = %s', (level_id, player_data[0][0]))
 
 		if record_status and record_status[0][0] == 1:
-			return await interaction.response.send_message(
-				embed=error_embed(f'**{player_name}** is the verifier of this level!'),
-				ephemeral=True
-			)
+			return await interaction.response.send_message(embed=error_embed(f'**{player_name}** is the verifier of this level!'), ephemeral=True)
 
 		await execute_write('''
 	    INSERT INTO records (level_id, player_id, progress, is_verifier)
@@ -173,9 +149,7 @@ class AddGroup(Group, name='add'):
 	    progress = %s
 		''', (level_id, player_data[0][0], percentage, percentage))
 
-		await interaction.response.send_message(
-			embed=success_embed(f'Added/Updated record for **{player_name}** (**{percentage}%**) on \"**{level_name}**\" by {publisher}!')
-		)
+		await interaction.response.send_message(embed=success_embed(f'Added/Updated record for **{player_name}** (**{percentage}%**) on \"**{level_name}**\" by {publisher}!'))
 
 	@command(name='player', description='Register a new player to the database')
 	@checks.has_any_role(*MODERATORS)
@@ -185,7 +159,7 @@ class AddGroup(Group, name='add'):
 	@smart_describe()
 	@log_command
 	async def add_player(self, interaction: Interaction, player_name: str, player_nationality: Optional[str] = None) -> None:
-		if existing := await execute_get('SELECT player_name FROM players WHERE LOWER(player_name) = LOWER(%s)', (player_name,)):
+		if await execute_get('SELECT player_name FROM players WHERE LOWER(player_name) = LOWER(%s)', (player_name,)):
 			return await interaction.response.send_message(embed=error_embed(f'Player **{player_name}** is already registered!'), ephemeral=True)
 
 		if player_nationality and player_nationality not in COUNTRIES.values():

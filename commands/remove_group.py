@@ -68,10 +68,7 @@ class RemoveGroup(Group, name='remove'):
 			return await interaction.response.send_message(embed=error_embed(f'**{player_name}** is not a creator of this level!'), ephemeral=True)
 
 		if is_publisher[0][0]:
-			return await interaction.response.send_message(
-				embed=error_embed(f'**{player_name}** is the publisher! You must set a new publisher before removing.'),
-				ephemeral=True
-			)
+			return await interaction.response.send_message(embed=error_embed(f'**{player_name}** is the publisher! You must set a new publisher before removing.'), ephemeral=True)
 
 		await execute_write('DELETE FROM creators WHERE level_id = %s AND player_id = %s', (level_id, player_id))
 		await interaction.response.send_message(embed=success_embed(f'Removed creator **{player_name}** from \"**{level_name}**\" by {publisher}!'))
@@ -99,23 +96,15 @@ class RemoveGroup(Group, name='remove'):
 		name, publisher = result[0]
 
 		if not (player_data := await execute_get('SELECT player_id FROM players WHERE player_name = %s', (player_name,))):
-			return await interaction.response.send_message(
-				embed=error_embed(f'Player **{player_name}** is not registered yet! Use `/add player` first .'),
-				ephemeral=True
-			)
+			return await interaction.response.send_message(embed=error_embed(f'Player **{player_name}** is not registered yet! Use `/add player` first .'), ephemeral=True)
 
 		record_check = await execute_get('SELECT is_verifier FROM records WHERE level_id = %s AND player_id = %s', (level_id, player_data[0][0]))
 
 		if not record_check:
-			return await interaction.response.send_message(
-				embed=error_embed(f'**{player_name}** doesn\'t have a record on \"**{name}**\" by {publisher}!'),
-				ephemeral=True
-			)
+			return await interaction.response.send_message(embed=error_embed(f'**{player_name}** doesn\'t have a record on \"**{name}**\" by {publisher}!'), ephemeral=True)
 
 		if record_check[0][0] == 1:
 			return await interaction.response.send_message(embed=error_embed('You can\'t remove the verifier!'), ephemeral=True)
 
 		await execute_write('DELETE FROM records WHERE level_id = %s AND player_id = %s', (level_id, player_data[0][0]))
-		await interaction.response.send_message(
-			embed=success_embed(f'Removed a victor **{player_name}** from \"**{name}**\" by {publisher}!')
-		)
+		await interaction.response.send_message(embed=success_embed(f'Removed a victor **{player_name}** from \"**{name}**\" by {publisher}!'))

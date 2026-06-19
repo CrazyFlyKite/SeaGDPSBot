@@ -35,9 +35,7 @@ class EditGroup(Group, name='edit'):
 			return await interaction.response.send_message(embed=error_embed('The new name is the same as the current name!'), ephemeral=True)
 
 		await execute_write('UPDATE demonlist SET level_name = %s WHERE level_id = %s', (new_name, level_id))
-		await interaction.response.send_message(
-			embed=success_embed(f'\"**{old_name}**\" by {publisher} renamed to \"**{new_name}**\"!')
-		)
+		await interaction.response.send_message(embed=success_embed(f'\"**{old_name}**\" by {publisher} renamed to \"**{new_name}**\"!'))
 
 	@command(name='publisher', description='Edit the publisher of a level')
 	@checks.has_any_role(*MODERATORS)
@@ -63,11 +61,7 @@ class EditGroup(Group, name='edit'):
 			return await interaction.response.send_message(embed=error_embed(f'**{player_name}** is already the publisher!'), ephemeral=True)
 
 		await execute_write('UPDATE creators SET is_publisher = 0 WHERE level_id = %s AND is_publisher = 1', (level_id,))
-
-		await execute_write(
-			'INSERT INTO creators (level_id, player_id, is_publisher) VALUES (%s, %s, 1) ON DUPLICATE KEY UPDATE is_publisher = 1',
-			(level_id, player_id)
-		)
+		await execute_write('INSERT INTO creators (level_id, player_id, is_publisher) VALUES (%s, %s, 1) ON DUPLICATE KEY UPDATE is_publisher = 1', (level_id, player_id))
 
 		await interaction.response.send_message(embed=success_embed(f'The publisher of \"**{level_name}**\" changed to **{player_name}**!'))
 
@@ -106,10 +100,7 @@ class EditGroup(Group, name='edit'):
 			return await interaction.response.send_message(embed=error_embed('The new verifier is the same as the current verifier!'), ephemeral=True)
 
 		if not (new_player_data := await execute_get('SELECT player_id FROM players WHERE player_name = %s', (new_verifier,))):
-			return await interaction.response.send_message(
-				embed=error_embed(f'Player **{new_verifier}** is not registered yet! Use `/add player` first.'),
-				ephemeral=True
-			)
+			return await interaction.response.send_message(embed=error_embed(f'Player **{new_verifier}** is not registered yet! Use `/add player` first.'), ephemeral=True)
 
 		await execute_write('UPDATE records SET is_verifier = 0 WHERE level_id = %s AND is_verifier = 1', (level_id,))
 		await execute_write('''
@@ -118,9 +109,7 @@ class EditGroup(Group, name='edit'):
         ON DUPLICATE KEY UPDATE is_verifier = 1, progress = 100
 	    ''', (level_id, new_player_data[0][0]))
 
-		await interaction.response.send_message(
-			embed=success_embed(f'The verifier of \"**{level_name}**\" by {publisher} changed from **{old_verifier_name}** to **{new_verifier}**!')
-		)
+		await interaction.response.send_message(embed=success_embed(f'The verifier of \"**{level_name}**\" by {publisher} changed from **{old_verifier_name}** to **{new_verifier}**!'))
 
 	@command(name='difficulty', description='Edit the difficulty of a level')
 	@checks.has_any_role(*MODERATORS)
@@ -146,16 +135,11 @@ class EditGroup(Group, name='edit'):
 		name, publisher, old_difficulty = result[0]
 
 		if old_difficulty == new_difficulty:
-			return await interaction.response.send_message(
-				embed=error_embed('The new difficulty is the same as the current difficulty!'),
-				ephemeral=True
-			)
+			return await interaction.response.send_message(embed=error_embed('The new difficulty is the same as the current difficulty!'), ephemeral=True)
 
 		await execute_write('UPDATE demonlist SET difficulty = %s WHERE level_id = %s', (new_difficulty, level_id))
 		await interaction.response.send_message(
-			embed=success_embed(
-				f'The difficulty of \"**{name}**\" by {publisher} changed from **{DIFFICULTIES[old_difficulty - 1].name}** to **{DIFFICULTIES[new_difficulty - 1].name}**!'
-			)
+			embed=success_embed(f'The difficulty of \"**{name}**\" by {publisher} changed from **{DIFFICULTIES[old_difficulty - 1].name}** to **{DIFFICULTIES[new_difficulty - 1].name}**!')
 		)
 
 	@command(name='rating', description='Edit the rating of a level')
@@ -187,9 +171,7 @@ class EditGroup(Group, name='edit'):
 
 		await execute_write('UPDATE demonlist SET rating = %s WHERE level_id = %s', (new_rating, level_id))
 		await interaction.response.send_message(
-			embed=success_embed(
-				f'The rating of \"**{name}**\" by {publisher} changed from **{RATINGS[old_rating - 1].name}** to **{RATINGS[new_rating - 1].name}**!'
-			)
+			embed=success_embed(f'The rating of \"**{name}**\" by {publisher} changed from **{RATINGS[old_rating - 1].name}** to **{RATINGS[new_rating - 1].name}**!')
 		)
 
 	@command(name='list_percentage', description='Edit the list % of a level')
@@ -218,9 +200,7 @@ class EditGroup(Group, name='edit'):
 			return await interaction.response.send_message(embed=error_embed('The new list % is the same as the current list %!'), ephemeral=True)
 
 		await execute_write('UPDATE demonlist SET list_percentage = %s WHERE level_id = %s', (new_list_percentage, level_id))
-		await interaction.response.send_message(
-			embed=success_embed(f'The list % of \"**{name}**\" by {publisher} changed from **{old_list_percentage}%** to **{new_list_percentage}%**!')
-		)
+		await interaction.response.send_message(embed=success_embed(f'The list % of \"**{name}**\" by {publisher} changed from **{old_list_percentage}%** to **{new_list_percentage}%**!'))
 
 	@command(name='player_name', description='Edit a player\'s name')
 	@checks.has_any_role(*MODERATORS)
@@ -231,12 +211,10 @@ class EditGroup(Group, name='edit'):
 	@smart_describe()
 	@log_command
 	async def edit_player_name(self, interaction: Interaction, old_player_name: str, new_player_name: str) -> None:
-		player_data = await execute_get('SELECT player_id FROM players WHERE player_name = %s', (old_player_name,))
-
-		if not player_data:
+		if not (player_data := await execute_get('SELECT player_id FROM players WHERE player_name = %s', (old_player_name,))):
 			return await interaction.response.send_message(embed=error_embed(f'Player **{old_player_name}** not found!'), ephemeral=True)
 
-		if await execute_get('SELECT player_id FROM players WHERE player_name = %s', (new_player_name,)):
+		if (conflict := await execute_get('SELECT player_id FROM players WHERE LOWER(player_name) = LOWER(%s)', (new_player_name,))) and conflict[0][0] != player_data[0][0]:
 			return await interaction.response.send_message(embed=error_embed(f'Player named **{new_player_name}** already exists!'), ephemeral=True)
 
 		await execute_write('UPDATE players SET player_name = %s WHERE player_id = %s', (new_player_name, player_data[0][0]))
@@ -251,9 +229,7 @@ class EditGroup(Group, name='edit'):
 	@smart_describe()
 	@log_command
 	async def edit_player_nationality(self, interaction: Interaction, player_name: str, player_nationality: str) -> None:
-		player_data = await execute_get('SELECT player_id FROM players WHERE player_name = %s', (player_name,))
-
-		if not player_data:
+		if not (player_data := await execute_get('SELECT player_id FROM players WHERE player_name = %s', (player_name,))):
 			return await interaction.response.send_message(embed=error_embed(f'Player **{player_name}** not found!'), ephemeral=True)
 
 		if player_nationality and player_nationality not in COUNTRIES.values():
