@@ -47,8 +47,12 @@ class AddGroup(Group, name='add'):
 		if not (1 <= placement <= max_placement):
 			return await interaction.response.send_message(embed=error_embed(f'The placement be between **1** and **{max_placement}**!'), ephemeral=True)
 
-		if use_difficulty and (difficulty is None or rating is None):
-			return await interaction.response.send_message(embed=error_embed(f'This list requires difficulty and ratings!'), ephemeral=True)
+		if use_difficulty:
+			if difficulty is None or rating is None:
+				return await interaction.response.send_message(embed=error_embed('This list requires difficulty and ratings!'), ephemeral=True)
+		else:
+			if difficulty is not None or rating is not None:
+				return await interaction.response.send_message(embed=error_embed('This list doesn\'t use difficulty or ratings!'), ephemeral=True)
 
 		if use_list_percentage and list_percentage is None:
 			return await interaction.response.send_message(embed=error_embed(f'This list requires list %!'), ephemeral=True)

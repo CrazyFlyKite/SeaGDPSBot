@@ -1,5 +1,9 @@
 # Changelog
 
+## 3.1.2 | 24.06.2026
+
+- Fixed `use_difficulty` bug
+
 ## 3.1.1 | 24.06.2026
 
 - Fixed critical permission issues
