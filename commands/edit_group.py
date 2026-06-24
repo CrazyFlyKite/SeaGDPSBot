@@ -122,8 +122,9 @@ class EditGroup(Group, name='edit'):
 	@log_command
 	async def edit_difficulty(self, interaction: Interaction, level_id: LevelIDInt, new_difficulty: int) -> None:
 		result = await execute_get('''
-		SELECT l.level_name, p.player_name, l.difficulty
+		SELECT l.level_name, p.player_name, l.difficulty, li.use_difficulty
         FROM levels l
+        JOIN lists li ON l.list_id = li.list_id
         LEFT JOIN creators c ON l.level_id = c.level_id AND c.is_publisher = TRUE
         LEFT JOIN players p ON c.player_id = p.player_id
         WHERE l.level_id = %s
@@ -132,7 +133,10 @@ class EditGroup(Group, name='edit'):
 		if not result:
 			return await interaction.response.send_message(embed=error_embed('Level not found!'), ephemeral=True)
 
-		name, publisher, old_difficulty = result[0]
+		name, publisher, old_difficulty, use_difficulty = result[0]
+
+		if not use_difficulty:
+			return await interaction.response.send_message(embed=error_embed('This list doesn\'t use difficulty and ratings!'), ephemeral=True)
 
 		if old_difficulty == new_difficulty:
 			return await interaction.response.send_message(embed=error_embed('The new difficulty is the same as the current difficulty!'), ephemeral=True)
@@ -153,8 +157,9 @@ class EditGroup(Group, name='edit'):
 	@log_command
 	async def edit_rating(self, interaction: Interaction, level_id: LevelIDInt, new_rating: int) -> None:
 		result = await execute_get('''
-		SELECT l.level_name, p.player_name, l.rating
+		SELECT l.level_name, p.player_name, l.rating, li.use_difficulty
         FROM levels l
+        JOIN lists li ON l.list_id = li.list_id
         LEFT JOIN creators c ON l.level_id = c.level_id AND c.is_publisher = TRUE
         LEFT JOIN players p ON c.player_id = p.player_id
         WHERE l.level_id = %s
@@ -163,7 +168,10 @@ class EditGroup(Group, name='edit'):
 		if not result:
 			return await interaction.response.send_message(embed=error_embed('Level not found!'), ephemeral=True)
 
-		name, publisher, old_rating = result[0]
+		name, publisher, old_rating, use_difficulty = result[0]
+
+		if not use_difficulty:
+			return await interaction.response.send_message(embed=error_embed('This list doesn\'t use difficulty and ratings!'), ephemeral=True)
 
 		if old_rating == new_rating:
 			return await interaction.response.send_message(embed=error_embed('The new rating is the same as the current rating!'), ephemeral=True)

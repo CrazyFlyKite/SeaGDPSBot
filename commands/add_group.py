@@ -22,11 +22,11 @@ class AddGroup(Group, name='add'):
 	@smart_describe()
 	@log_command
 	async def add_level(self, interaction: Interaction, list_id: int, placement: PlacementInt, level_id: LevelIDInt, name: str, publisher: str, verifier: str,
-	                    difficulty: int, rating: int, list_percentage: Optional[PercentageInt]) -> None:
-		if not (result := await execute_get('SELECT record_mode, use_list_percentage FROM lists WHERE list_id = %s', (list_id,))):
+	                    difficulty: Optional[int] = None, rating: Optional[int] = None, list_percentage: Optional[PercentageInt] = None) -> None:
+		if not (result := await execute_get('SELECT record_mode, use_list_percentage, use_difficulty FROM lists WHERE list_id = %s', (list_id,))):
 			return await interaction.response.send_message(embed=error_embed(f'This list doesn\'t exist!'), ephemeral=True)
 
-		record_mode, use_list_percentage = result[0]
+		record_mode, use_list_percentage, use_difficulty = result[0]
 
 		if await execute_get('SELECT level_name FROM levels WHERE level_id = %s', (level_id,)):
 			return await interaction.response.send_message(embed=error_embed(f'Level with ID **{level_id}** already exists!'), ephemeral=True)
@@ -46,6 +46,9 @@ class AddGroup(Group, name='add'):
 
 		if not (1 <= placement <= max_placement):
 			return await interaction.response.send_message(embed=error_embed(f'The placement be between **1** and **{max_placement}**!'), ephemeral=True)
+
+		if use_difficulty and (difficulty is None or rating is None):
+			return await interaction.response.send_message(embed=error_embed(f'This list requires difficulty and ratings!'), ephemeral=True)
 
 		if use_list_percentage and list_percentage is None:
 			return await interaction.response.send_message(embed=error_embed(f'This list requires list %!'), ephemeral=True)
@@ -125,7 +128,7 @@ class AddGroup(Group, name='add'):
 	@log_command
 	async def add_victor(self, interaction: Interaction, level_id: LevelIDInt, player_name: str, percentage: Optional[PercentageInt] = None, time: Optional[str] = None) -> None:
 		result = await execute_get('''
-		SELECT l.level_name, p.player_name, l.list_percentage, li.record_mode
+		SELECT l.level_name, p.player_name, l.list_percentage, li.record_mode, li.use_list_percentage
         FROM levels l
         JOIN lists li ON li.list_id = l.list_id
         LEFT JOIN creators c ON l.level_id = c.level_id AND c.is_publisher = TRUE
@@ -136,7 +139,7 @@ class AddGroup(Group, name='add'):
 		if not result:
 			return await interaction.response.send_message(embed=error_embed('Level not found!'), ephemeral=True)
 
-		level_name, publisher, list_percentage, record_mode = result[0]
+		level_name, publisher, list_percentage, record_mode, use_list_percentage = result[0]
 
 		if (percentage is None) == (time is None):
 			return await interaction.response.send_message(embed=error_embed('Either % or time must be filled, not both or none!'), ephemeral=True)
@@ -145,8 +148,11 @@ class AddGroup(Group, name='add'):
 			if percentage is None:
 				return await interaction.response.send_message(embed=error_embed('This list uses % records. Please, provide %!'), ephemeral=True)
 
-			if percentage < list_percentage:
+			if use_list_percentage and percentage < list_percentage:
 				return await interaction.response.send_message(embed=error_embed(f'The % cannot be less than the list % (**{list_percentage}%**)!'), ephemeral=True)
+
+			if not use_list_percentage and percentage < 100:
+				return await interaction.response.send_message(embed=error_embed('This list requires 100% completions!'), ephemeral=True)
 
 		if not (player_data := await execute_get('SELECT player_id FROM players WHERE player_name = %s', (player_name,))):
 			return await interaction.response.send_message(embed=error_embed(f'Player **{player_name}** is not registered yet! Use `/add player` first :)'), ephemeral=True)

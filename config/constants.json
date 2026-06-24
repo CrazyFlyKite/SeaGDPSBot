@@ -1,6 +1,6 @@
 {
 	"logging_format": "[%(levelname)s]: %(message)s",
-	"database": "seagdps_test",
+	"database": "seagdps",
 	"developer_id": 873920068571000833,
 	"difficulties": {
 		"Easy Demon": 1,

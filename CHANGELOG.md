@@ -1,5 +1,9 @@
 # Changelog
 
+## 3.1.0 | 24.06.2026
+
+- Added support for the Challenge List
+
 ## 3.0.0 | 24.06.2026
 
 - Added more lists support (that's basically it, but there are too many changes associated with it)
