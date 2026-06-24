@@ -17,7 +17,7 @@
 		"Mythic": 5
 	},
 	"described_parameters": {
-		"list": "List (Demonlist, Pemonlist…)",
+		"list_id": "List (Demonlist, Pemonlist…)",
 		"level_id": "Level ID",
 		"placement": "Placement on the list",
 		"new_placement": "New placement on the list",

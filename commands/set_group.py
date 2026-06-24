@@ -15,7 +15,7 @@ class SetGroup(Group, name='set'):
 	@command(name='thumbnail', description='Add, remove or edit the thumbnail to a level')
 	@guild_only()
 	@limit_command
-	@restrict_command(level_id_arg='level_id')
+	@restrict_command(arg='level_id')
 	@rename(level_id='id')
 	@autocomplete(level_id=level_autocomplete)
 	@smart_describe()
@@ -58,7 +58,7 @@ class SetGroup(Group, name='set'):
 	@command(name='showcase', description='Add, remove or edit the showcase of a level')
 	@guild_only()
 	@limit_command
-	@restrict_command(level_id_arg='level_id')
+	@restrict_command(arg='level_id')
 	@rename(level_id='id')
 	@autocomplete(level_id=level_autocomplete)
 	@smart_describe()

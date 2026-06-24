@@ -15,7 +15,7 @@ class AddGroup(Group, name='add'):
 	@command(name='level', description='Add a level to the list')
 	@guild_only()
 	@limit_command
-	@restrict_command(level_id_arg='level_id')
+	@restrict_command(arg='list_id', is_list_id=True)
 	@rename(list_id='list', level_id='id')
 	@autocomplete(list_id=list_name_autocomplete, publisher=player_name_autocomplete, verifier=player_name_autocomplete)
 	@choices(difficulty=DIFFICULTIES, rating=RATINGS)
@@ -88,7 +88,7 @@ class AddGroup(Group, name='add'):
 	@command(name='creator', description='Add a creator to a level')
 	@guild_only()
 	@limit_command
-	@restrict_command(level_id_arg='level_id')
+	@restrict_command(arg='level_id')
 	@rename(level_id='id')
 	@autocomplete(level_id=level_autocomplete, creator=player_name_autocomplete)
 	@smart_describe()
@@ -121,7 +121,7 @@ class AddGroup(Group, name='add'):
 	@command(name='victor', description='Add/Update a victor to/of a level')
 	@guild_only()
 	@limit_command
-	@restrict_command(level_id_arg='level_id')
+	@restrict_command(arg='level_id')
 	@rename(level_id='id')
 	@autocomplete(level_id=level_autocomplete, player_name=player_name_autocomplete)
 	@smart_describe()
@@ -148,11 +148,12 @@ class AddGroup(Group, name='add'):
 			if percentage is None:
 				return await interaction.response.send_message(embed=error_embed('This list uses % records. Please, provide %!'), ephemeral=True)
 
-			if use_list_percentage and percentage < list_percentage:
-				return await interaction.response.send_message(embed=error_embed(f'The % cannot be less than the list % (**{list_percentage}%**)!'), ephemeral=True)
-
-			if not use_list_percentage and percentage < 100:
-				return await interaction.response.send_message(embed=error_embed('This list requires 100% completions!'), ephemeral=True)
+			if use_list_percentage:
+				if percentage < list_percentage:
+					return await interaction.response.send_message(embed=error_embed(f'The % cannot be less than the list % (**{list_percentage}%**)!'), ephemeral=True)
+			else:
+				if percentage < 100:
+					return await interaction.response.send_message(embed=error_embed('This list requires 100% completions!'), ephemeral=True)
 
 		if not (player_data := await execute_get('SELECT player_id FROM players WHERE player_name = %s', (player_name,))):
 			return await interaction.response.send_message(embed=error_embed(f'Player **{player_name}** is not registered yet! Use `/add player` first :)'), ephemeral=True)
@@ -186,7 +187,7 @@ class AddGroup(Group, name='add'):
 	@command(name='player', description='Register a new player to the database')
 	@guild_only()
 	@limit_command
-	@restrict_command(level_id_arg='level_id')
+	@restrict_command(arg='level_id')
 	@autocomplete(player_nationality=country_autocomplete)
 	@smart_describe()
 	@log_command

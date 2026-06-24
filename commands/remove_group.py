@@ -12,7 +12,7 @@ class RemoveGroup(Group, name='remove'):
 	@command(name='level', description='Remove a level from the list')
 	@guild_only()
 	@limit_command
-	@restrict_command(level_id_arg='level_id')
+	@restrict_command(arg='level_id')
 	@rename(level_id='id')
 	@autocomplete(level_id=level_autocomplete)
 	@smart_describe()
@@ -38,7 +38,7 @@ class RemoveGroup(Group, name='remove'):
 	@command(name='creator', description='Remove a creator from a level')
 	@guild_only()
 	@limit_command
-	@restrict_command(level_id_arg='level_id')
+	@restrict_command(arg='level_id')
 	@rename(level_id='id')
 	@autocomplete(level_id=level_autocomplete, creator=player_name_autocomplete)
 	@smart_describe()
@@ -75,7 +75,7 @@ class RemoveGroup(Group, name='remove'):
 	@command(name='victor', description='Remove a victor from a level')
 	@guild_only()
 	@limit_command
-	@restrict_command(level_id_arg='level_id')
+	@restrict_command(arg='level_id')
 	@rename(level_id='id')
 	@autocomplete(level_id=level_autocomplete, player_name=player_name_autocomplete)
 	@smart_describe()

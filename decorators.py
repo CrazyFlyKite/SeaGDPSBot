@@ -1,7 +1,7 @@
 import logging
 from functools import wraps
 from inspect import signature
-from typing import Callable
+from typing import Optional, Callable
 
 from discord.app_commands import describe
 
@@ -36,7 +36,7 @@ def limit_command(command: Callable) -> Callable:
 	return wrapper
 
 
-def restrict_command(level_id_arg: str) -> Callable:
+def restrict_command(arg: str, is_list_id: Optional[bool] = False) -> Callable:
 	def decorator(command) -> Callable:
 		@wraps(command)
 		async def wrapper(*args, **kwargs) -> None:
@@ -45,7 +45,12 @@ def restrict_command(level_id_arg: str) -> Callable:
 			if interaction.user.id == DEVELOPER_ID:
 				return await command(*args, **kwargs)
 
-			if not (result := await execute_get('SELECT li.moderator_role_id FROM levels l JOIN lists li ON li.list_id = l.list_id WHERE l.level_id = %s', (kwargs.get(level_id_arg),))):
+			if is_list_id:
+				result = await execute_get('SELECT moderator_role_id FROM lists WHERE list_id = %s', (kwargs.get(arg),))
+			else:
+				result = await execute_get('SELECT li.moderator_role_id FROM levels l JOIN lists li ON l.list_id = li.list_id WHERE l.level_id = %s', (kwargs.get(arg),))
+
+			if not result:
 				return await interaction.response.send_message(embed=error_embed('This list doesn\'t exist!'), ephemeral=True)
 
 			role_id = result[0][0]

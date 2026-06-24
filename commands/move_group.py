@@ -12,7 +12,7 @@ class MoveGroup(Group, name='move'):
 	@command(name='level', description='Move a level to a new placement')
 	@guild_only()
 	@limit_command
-	@restrict_command(level_id_arg='level_id')
+	@restrict_command(arg='level_id')
 	@rename(level_id='id')
 	@autocomplete(level_id=level_autocomplete)
 	@smart_describe()

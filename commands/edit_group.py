@@ -12,7 +12,7 @@ class EditGroup(Group, name='edit'):
 	@command(name='name', description='Edit the name of a level')
 	@guild_only()
 	@limit_command
-	@restrict_command(level_id_arg='level_id')
+	@restrict_command(arg='level_id')
 	@rename(level_id='id')
 	@autocomplete(level_id=level_autocomplete)
 	@smart_describe()
@@ -40,7 +40,7 @@ class EditGroup(Group, name='edit'):
 	@command(name='publisher', description='Edit the publisher of a level')
 	@guild_only()
 	@limit_command
-	@restrict_command(level_id_arg='level_id')
+	@restrict_command(arg='level_id')
 	@rename(level_id='id')
 	@autocomplete(level_id=level_autocomplete, publisher=player_name_autocomplete)
 	@smart_describe()
@@ -68,7 +68,7 @@ class EditGroup(Group, name='edit'):
 	@command(name='verifier', description='Edit the verifier of a level')
 	@guild_only()
 	@limit_command
-	@restrict_command(level_id_arg='level_id')
+	@restrict_command(arg='level_id')
 	@rename(level_id='id')
 	@autocomplete(level_id=level_autocomplete, new_verifier=player_name_autocomplete)
 	@smart_describe()
@@ -114,7 +114,7 @@ class EditGroup(Group, name='edit'):
 	@command(name='difficulty', description='Edit the difficulty of a level')
 	@guild_only()
 	@limit_command
-	@restrict_command(level_id_arg='level_id')
+	@restrict_command(arg='level_id')
 	@rename(level_id='id')
 	@autocomplete(level_id=level_autocomplete)
 	@choices(new_difficulty=DIFFICULTIES)
@@ -149,7 +149,7 @@ class EditGroup(Group, name='edit'):
 	@command(name='rating', description='Edit the rating of a level')
 	@guild_only()
 	@limit_command
-	@restrict_command(level_id_arg='level_id')
+	@restrict_command(arg='level_id')
 	@rename(level_id='id')
 	@autocomplete(level_id=level_autocomplete)
 	@choices(new_rating=RATINGS)
@@ -184,7 +184,7 @@ class EditGroup(Group, name='edit'):
 	@command(name='list_percentage', description='Edit the list % of a level')
 	@guild_only()
 	@limit_command
-	@restrict_command(level_id_arg='level_id')
+	@restrict_command(arg='level_id')
 	@rename(level_id='id')
 	@autocomplete(level_id=level_autocomplete)
 	@smart_describe()
@@ -216,7 +216,7 @@ class EditGroup(Group, name='edit'):
 	@command(name='player_name', description='Edit a player\'s name')
 	@guild_only()
 	@limit_command
-	@restrict_command(level_id_arg='level_id')
+	@restrict_command(arg='level_id')
 	@autocomplete(old_player_name=player_name_autocomplete)
 	@smart_describe()
 	@log_command
@@ -233,7 +233,7 @@ class EditGroup(Group, name='edit'):
 	@command(name='player_nationality', description='Edit a player\'s nationality')
 	@guild_only()
 	@limit_command
-	@restrict_command(level_id_arg='level_id')
+	@restrict_command(arg='level_id')
 	@autocomplete(player_name=player_name_autocomplete, player_nationality=country_autocomplete)
 	@smart_describe()
 	@log_command

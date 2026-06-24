@@ -1,5 +1,9 @@
 # Changelog
 
+## 3.1.1 | 24.06.2026
+
+- Fixed critical permission issues
+
 ## 3.1.0 | 24.06.2026
 
 - Added support for the Challenge List
