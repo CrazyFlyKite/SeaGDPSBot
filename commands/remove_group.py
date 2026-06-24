@@ -1,56 +1,55 @@
 from discord import Interaction
-from discord.app_commands import checks, command, guild_only, autocomplete, rename, Group
+from discord.app_commands import command, guild_only, autocomplete, rename, Group
 
 from database import execute_get, execute_write
-from decorators import log_command, limit_command, smart_describe
+from decorators import log_command, limit_command, restrict_command, smart_describe
 from embeds import success_embed, error_embed
 from help_functions import level_autocomplete, player_name_autocomplete
 from utilities import *
 
 
 class RemoveGroup(Group, name='remove'):
-	@command(name='level', description='Remove a level from the Demonlist')
-	@checks.has_any_role(*MODERATORS)
+	@command(name='level', description='Remove a level from the list')
 	@guild_only()
 	@limit_command
+	@restrict_command(level_id_arg='level_id')
 	@rename(level_id='id')
 	@autocomplete(level_id=level_autocomplete)
 	@smart_describe()
 	@log_command
 	async def remove_level(self, interaction: Interaction, level_id: int) -> None:
 		result = await execute_get('''
-	    SELECT d.placement, d.level_name, p.player_name
-	    FROM demonlist d
-	    LEFT JOIN creators c ON d.level_id = c.level_id AND c.is_publisher = TRUE
+	    SELECT l.list_id, l.placement, l.level_name, p.player_name
+	    FROM levels l
+	    LEFT JOIN creators c ON l.level_id = c.level_id AND c.is_publisher = TRUE
 	    LEFT JOIN players p ON c.player_id = p.player_id
-	    WHERE d.level_id = %s
+	    WHERE l.level_id = %s
 	    ''', (level_id,))
 
 		if not result:
 			return await interaction.response.send_message(embed=error_embed('Level not found!'), ephemeral=True)
 
-		placement, name, publisher = result[0]
-		publisher = publisher or 'Unknown'
+		list_id, placement, name, publisher = result[0]
 
-		await execute_write('DELETE FROM demonlist WHERE level_id = %s', (level_id,))
-		await execute_write('UPDATE demonlist SET placement = placement - 1 WHERE placement > %s ORDER BY placement ASC', (placement,))
-		await interaction.response.send_message(embed=success_embed(f'\"**{name}**\" by {publisher} removed from the Demonlist!'))
+		await execute_write('DELETE FROM levels WHERE level_id = %s', (level_id,))
+		await execute_write('UPDATE levels SET placement = placement - 1 WHERE list_id = %s AND placement > %s ORDER BY placement ASC', (list_id, placement))
+		await interaction.response.send_message(embed=success_embed(f'\"**{name}**\" by {publisher} removed from the list!'))
 
 	@command(name='creator', description='Remove a creator from a level')
-	@checks.has_any_role(*MODERATORS)
 	@guild_only()
 	@limit_command
+	@restrict_command(level_id_arg='level_id')
 	@rename(level_id='id')
 	@autocomplete(level_id=level_autocomplete, creator=player_name_autocomplete)
 	@smart_describe()
 	@log_command
 	async def remove_creator(self, interaction: Interaction, level_id: LevelIDInt, creator: str) -> None:
 		result = await execute_get('''
-        SELECT d.level_name, p.player_name
-        FROM demonlist d
-        LEFT JOIN creators c ON d.level_id = c.level_id AND c.is_publisher = 1
+        SELECT l.level_name, p.player_name
+        FROM levels l
+        LEFT JOIN creators c ON l.level_id = c.level_id AND c.is_publisher = TRUE
         LEFT JOIN players p ON c.player_id = p.player_id
-        WHERE d.level_id = %s
+        WHERE l.level_id = %s
 	    ''', (level_id,))
 
 		if not result:
@@ -74,20 +73,20 @@ class RemoveGroup(Group, name='remove'):
 		await interaction.response.send_message(embed=success_embed(f'Removed creator **{player_name}** from \"**{level_name}**\" by {publisher}!'))
 
 	@command(name='victor', description='Remove a victor from a level')
-	@checks.has_any_role(*MODERATORS)
 	@guild_only()
 	@limit_command
+	@restrict_command(level_id_arg='level_id')
 	@rename(level_id='id')
 	@autocomplete(level_id=level_autocomplete, player_name=player_name_autocomplete)
 	@smart_describe()
 	@log_command
 	async def remove_victor(self, interaction: Interaction, level_id: LevelIDInt, player_name: str) -> None:
 		result = await execute_get('''
-		SELECT d.level_name, p.player_name
-        FROM demonlist d
-        LEFT JOIN creators c ON d.level_id = c.level_id AND c.is_publisher = 1
+		SELECT l.level_name, p.player_name
+        FROM levels l
+        LEFT JOIN creators c ON l.level_id = c.level_id AND c.is_publisher = TRUE
         LEFT JOIN players p ON c.player_id = p.player_id
-        WHERE d.level_id = %s
+        WHERE l.level_id = %s
         ''', (level_id,))
 
 		if not result:

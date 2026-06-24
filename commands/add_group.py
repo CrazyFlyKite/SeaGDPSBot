@@ -1,31 +1,37 @@
 from typing import Tuple, Optional
 
 from discord import Interaction, Colour
-from discord.app_commands import checks, choices, command, guild_only, autocomplete, rename, Group
+from discord.app_commands import choices, command, guild_only, autocomplete, rename, Group
+from mysql.connector import DataError
 
 from database import execute_get, execute_write
-from decorators import log_command, limit_command, smart_describe
+from decorators import log_command, limit_command, restrict_command, smart_describe
 from embeds import embed, success_embed, error_embed
-from help_functions import level_autocomplete, player_name_autocomplete, country_autocomplete
+from help_functions import list_name_autocomplete, level_autocomplete, player_name_autocomplete, country_autocomplete
 from utilities import *
 
 
 class AddGroup(Group, name='add'):
-	@command(name='level', description='Add a level to the Demonlist')
-	@checks.has_any_role(*MODERATORS)
+	@command(name='level', description='Add a level to the list')
 	@guild_only()
 	@limit_command
-	@rename(level_id='id')
-	@autocomplete(publisher=player_name_autocomplete, verifier=player_name_autocomplete)
+	@restrict_command(level_id_arg='level_id')
+	@rename(list_id='list', level_id='id')
+	@autocomplete(list_id=list_name_autocomplete, publisher=player_name_autocomplete, verifier=player_name_autocomplete)
 	@choices(difficulty=DIFFICULTIES, rating=RATINGS)
 	@smart_describe()
 	@log_command
-	async def add_level(self, interaction: Interaction, placement: PlacementInt, level_id: LevelIDInt, name: str, publisher: str, verifier: str,
-	                    difficulty: int, rating: int, list_percentage: PercentageInt) -> None:
-		if await execute_get('SELECT level_name FROM demonlist WHERE level_id = %s', (level_id,)):
+	async def add_level(self, interaction: Interaction, list_id: int, placement: PlacementInt, level_id: LevelIDInt, name: str, publisher: str, verifier: str,
+	                    difficulty: int, rating: int, list_percentage: Optional[PercentageInt]) -> None:
+		if not (result := await execute_get('SELECT record_mode, use_list_percentage FROM lists WHERE list_id = %s', (list_id,))):
+			return await interaction.response.send_message(embed=error_embed(f'This list doesn\'t exist!'), ephemeral=True)
+
+		record_mode, use_list_percentage = result[0]
+
+		if await execute_get('SELECT level_name FROM levels WHERE level_id = %s', (level_id,)):
 			return await interaction.response.send_message(embed=error_embed(f'Level with ID **{level_id}** already exists!'), ephemeral=True)
 
-		list_context: List[Tuple[int, str]] = await execute_get('SELECT placement, level_name FROM demonlist WHERE placement IN (10, 25)')
+		list_context: List[Tuple[int, str]] = await execute_get('SELECT placement, level_name FROM levels WHERE list_id = %s AND placement IN (10, 25)', (list_id,))
 		ctx_map: Dict[int, str] = {row[0]: row[1] for row in list_context}
 		publisher_data: List[str] = await execute_get('SELECT player_id FROM players WHERE player_name = %s', (publisher,))
 		verifier_data: List[str] = await execute_get('SELECT player_id FROM players WHERE player_name = %s', (verifier,))
@@ -36,21 +42,21 @@ class AddGroup(Group, name='add'):
 		if not verifier_data:
 			return await interaction.response.send_message(embed=error_embed(f'The verifier isn\'t registered yet! Use `/add player` first.'), ephemeral=True)
 
-		max_placement: int = (await execute_get('SELECT MAX(placement) FROM demonlist') or 0)[0][0] + 1
+		max_placement: int = (await execute_get('SELECT MAX(placement) FROM levels WHERE list_id = %s', (list_id,)))[0][0] + 1
 
 		if not (1 <= placement <= max_placement):
 			return await interaction.response.send_message(embed=error_embed(f'The placement be between **1** and **{max_placement}**!'), ephemeral=True)
 
-		await execute_write('UPDATE demonlist SET placement = placement + 1 WHERE placement >= %s ORDER BY placement DESC', (placement,))
+		if use_list_percentage and list_percentage is None:
+			return await interaction.response.send_message(embed=error_embed(f'This list requires list %!'), ephemeral=True)
+
+		await execute_write('UPDATE levels SET placement = placement + 1 WHERE list_id = %s AND placement >= %s ORDER BY placement DESC', (list_id, placement))
 		await execute_write(
-			'INSERT INTO demonlist (level_id, placement, level_name, difficulty, rating, list_percentage) VALUES (%s, %s, %s, %s, %s, %s)',
-			(level_id, placement, name, difficulty, rating, list_percentage)
+			'INSERT INTO levels (level_id, list_id, placement, level_name, difficulty, rating, list_percentage) VALUES (%s, %s, %s, %s, %s, %s, %s)',
+			(level_id, list_id, placement, name, difficulty, rating, list_percentage if use_list_percentage else None)
 		)
-		await execute_write('INSERT INTO creators (level_id, player_id, is_publisher) VALUES (%s, %s, 1)', (level_id, publisher_data[0][0]))
-		await execute_write(
-			'INSERT INTO records (level_id, player_id, progress, is_verifier) VALUES (%s, %s, 100, 1)',
-			(level_id, verifier_data[0][0])
-		)
+		await execute_write('INSERT INTO creators (level_id, player_id, is_publisher) VALUES (%s, %s, TRUE)', (level_id, publisher_data[0][0]))
+		await execute_write('INSERT INTO records (level_id, player_id, percentage, is_verifier) VALUES (%s, %s, %s, TRUE)', (level_id, verifier_data[0][0], None if record_mode == 'time' else 100))
 
 		audit_description: str = ''
 
@@ -69,7 +75,7 @@ class AddGroup(Group, name='add'):
 
 		await interaction.response.send_message(
 			embed=embed(
-				title=f'\"{name}\" by {publisher} placed at #{placement} on the Demonlist!',
+				title=f'\"{name}\" by {publisher} placed at #{placement} on the list!',
 				description=audit_description,
 				footer=f'Level ID: {level_id}',
 				color=Colour.green()
@@ -77,20 +83,20 @@ class AddGroup(Group, name='add'):
 		)
 
 	@command(name='creator', description='Add a creator to a level')
-	@checks.has_any_role(*MODERATORS)
 	@guild_only()
 	@limit_command
+	@restrict_command(level_id_arg='level_id')
 	@rename(level_id='id')
 	@autocomplete(level_id=level_autocomplete, creator=player_name_autocomplete)
 	@smart_describe()
 	@log_command
 	async def add_creator(self, interaction: Interaction, level_id: LevelIDInt, creator: str) -> None:
 		result = await execute_get('''
-        SELECT d.level_name, p.player_name
-        FROM demonlist d
-        LEFT JOIN creators c ON d.level_id = c.level_id AND c.is_publisher = 1
+        SELECT l.level_name, p.player_name
+        FROM levels l
+        LEFT JOIN creators c ON l.level_id = c.level_id AND c.is_publisher = TRUE
         LEFT JOIN players p ON c.player_id = p.player_id
-        WHERE d.level_id = %s
+        WHERE l.level_id = %s
 	    ''', (level_id,))
 
 		if not result:
@@ -110,29 +116,37 @@ class AddGroup(Group, name='add'):
 		await interaction.response.send_message(embed=success_embed(f'Added **{player_name}** as a creator of \"**{level_name}**\" by {publisher}!'))
 
 	@command(name='victor', description='Add/Update a victor to/of a level')
-	@checks.has_any_role(*MODERATORS)
 	@guild_only()
 	@limit_command
+	@restrict_command(level_id_arg='level_id')
 	@rename(level_id='id')
 	@autocomplete(level_id=level_autocomplete, player_name=player_name_autocomplete)
 	@smart_describe()
 	@log_command
-	async def add_victor(self, interaction: Interaction, level_id: LevelIDInt, player_name: str, percentage: PercentageInt) -> None:
+	async def add_victor(self, interaction: Interaction, level_id: LevelIDInt, player_name: str, percentage: Optional[PercentageInt] = None, time: Optional[str] = None) -> None:
 		result = await execute_get('''
-		SELECT d.level_name, p.player_name, d.list_percentage
-        FROM demonlist d
-        LEFT JOIN creators c ON d.level_id = c.level_id AND c.is_publisher = 1
+		SELECT l.level_name, p.player_name, l.list_percentage, li.record_mode
+        FROM levels l
+        JOIN lists li ON li.list_id = l.list_id
+        LEFT JOIN creators c ON l.level_id = c.level_id AND c.is_publisher = TRUE
         LEFT JOIN players p ON c.player_id = p.player_id
-        WHERE d.level_id = %s
+        WHERE l.level_id = %s
         ''', (level_id,))
 
 		if not result:
 			return await interaction.response.send_message(embed=error_embed('Level not found!'), ephemeral=True)
 
-		level_name, publisher, list_percentage = result[0]
+		level_name, publisher, list_percentage, record_mode = result[0]
 
-		if percentage < list_percentage:
-			return await interaction.response.send_message(embed=error_embed(f'The % cannot be less than the list % (**{list_percentage}%**)!'), ephemeral=True)
+		if (percentage is None) == (time is None):
+			return await interaction.response.send_message(embed=error_embed('Either % or time must be filled, not both or none!'), ephemeral=True)
+
+		if record_mode == 'percentage':
+			if percentage is None:
+				return await interaction.response.send_message(embed=error_embed('This list uses % records. Please, provide %!'), ephemeral=True)
+
+			if percentage < list_percentage:
+				return await interaction.response.send_message(embed=error_embed(f'The % cannot be less than the list % (**{list_percentage}%**)!'), ephemeral=True)
 
 		if not (player_data := await execute_get('SELECT player_id FROM players WHERE player_name = %s', (player_name,))):
 			return await interaction.response.send_message(embed=error_embed(f'Player **{player_name}** is not registered yet! Use `/add player` first :)'), ephemeral=True)
@@ -142,19 +156,31 @@ class AddGroup(Group, name='add'):
 		if record_status and record_status[0][0] == 1:
 			return await interaction.response.send_message(embed=error_embed(f'**{player_name}** is the verifier of this level!'), ephemeral=True)
 
-		await execute_write('''
-	    INSERT INTO records (level_id, player_id, progress, is_verifier)
-	    VALUES (%s, %s, %s, 0)
-	    ON DUPLICATE KEY UPDATE
-	    progress = %s
-		''', (level_id, player_data[0][0], percentage, percentage))
+		progress: str = f'{percentage}%'
+		if record_mode == 'percentage':
+			await execute_write('''
+			INSERT INTO records (level_id, player_id, percentage)
+			VALUES (%s, %s, %s)
+			ON DUPLICATE KEY UPDATE
+			percentage = %s
+			''', (level_id, player_data[0][0], percentage, percentage))
+		elif record_mode == 'time':
+			try:
+				progress: str = str(time)
+				await execute_write('''
+				INSERT INTO records (level_id, player_id, time_spent)
+				VALUES (%s, %s, %s)
+				ON DUPLICATE KEY UPDATE time_spent = %s
+				''', (level_id, player_data[0][0], time, time))
+			except DataError:
+				return await interaction.response.send_message(embed=error_embed(f'The time is in incorrect format!'), ephemeral=True)
 
-		await interaction.response.send_message(embed=success_embed(f'Added/Updated record for **{player_name}** (**{percentage}%**) on \"**{level_name}**\" by {publisher}!'))
+		await interaction.response.send_message(embed=success_embed(f'Added/Updated record for **{player_name}** (**{progress}**) on \"**{level_name}**\" by {publisher}!'))
 
 	@command(name='player', description='Register a new player to the database')
-	@checks.has_any_role(*MODERATORS)
 	@guild_only()
 	@limit_command
+	@restrict_command(level_id_arg='level_id')
 	@autocomplete(player_nationality=country_autocomplete)
 	@smart_describe()
 	@log_command

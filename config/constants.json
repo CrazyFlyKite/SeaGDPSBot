@@ -1,6 +1,7 @@
 {
 	"logging_format": "[%(levelname)s]: %(message)s",
-	"database": "seagdps",
+	"database": "seagdps_test",
+	"developer_id": 873920068571000833,
 	"difficulties": {
 		"Easy Demon": 1,
 		"Medium Demon": 2,
@@ -15,15 +16,11 @@
 		"Legendary": 4,
 		"Mythic": 5
 	},
-	"moderators": [
-		1285691974489342023,
-		1299870089281273897,
-		1259454439895601213
-	],
 	"described_parameters": {
+		"list": "List (Demonlist, Pemonlist…)",
 		"level_id": "Level ID",
-		"placement": "Placement on the Demonlist",
-		"new_placement": "New placement on the Demonlist",
+		"placement": "Placement on the list",
+		"new_placement": "New placement on the list",
 		"name": "Level name",
 		"new_name": "New level name",
 		"creator": "Level creator",
@@ -37,6 +34,7 @@
 		"list_percentage": "List %",
 		"new_list_percentage": "New list %",
 		"percentage": "%",
+		"time": "Time (Format: HH:MM:SS.mmm)",
 		"player_name": "Player name",
 		"old_player_name": "Old player name",
 		"new_player_name": "New player name",

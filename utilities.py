@@ -30,7 +30,7 @@ THUMBNAILS_PATH: Final[str] = require_env('THUMBNAILS_PATH')
 
 # Checking IP
 IS_NAS: Final[bool] = platform.system() == 'Linux'
-HOST_IP: Final[str] = '172.17.0.1' if IS_NAS else require_env('SYNOLOGY_IP')
+HOST_IP: Final[str] = '172.17.0.1' if IS_NAS else require_env('SERVER_IP')
 
 # Constants
 with open('config/constants.json', 'r', encoding='utf-8') as file:
@@ -38,9 +38,9 @@ with open('config/constants.json', 'r', encoding='utf-8') as file:
 
 LOGGING_FORMAT: Final[str] = config.get('logging_format', '')
 DATABASE: Final[str] = config.get('database', '')
+DEVELOPER_ID: Final[int] = config.get('developer_id', 0)
 DIFFICULTIES: Final[List[Choice]] = [Choice(name=name, value=value) for name, value in config.get('difficulties', {}).items()]
 RATINGS: Final[List[Choice]] = [Choice(name=name, value=value) for name, value in config.get('ratings', {}).items()]
-MODERATORS: Final[List[int]] = config.get('moderators', [])
 DESCRIBED_PARAMETERS: Final[Dict[str, str]] = config.get('described_parameters', [])
 
 with open('config/info_template.md', 'r', encoding='utf-8') as file:

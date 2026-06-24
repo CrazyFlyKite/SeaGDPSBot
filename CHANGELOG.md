@@ -1,5 +1,14 @@
 # Changelog
 
+## 3.0.0 | 24.06.2026
+
+- Added more lists support (that's basically it, but there are too many changes associated with it)
+
+## 2.1.1 | 19.06.2026
+
+- Cleaned up the code
+- Fixed the `/edit player_name` bug
+
 ## 2.1.0 | 27.02.2026
 
 - Added nationality functionality

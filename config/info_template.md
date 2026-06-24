@@ -4,13 +4,13 @@ I manage the official SeaGDPS Demonlist.
 - `/info` - Show information about the bot
 
 ## Restricted Commands
-- `/add level` - Add a level to the Demonlist
+- `/add level` - Add a level to the list
 - `/add creator` - Add a creator to a level
 - `/add victor` - Add/Update a victor to/of a level
 
 - `/move level` - Move a level to a new placement
 
-- `/remove level` - Remove a level from the Demonlist
+- `/remove level` - Remove a level from the list
 - `/remove creator` - Remove a creator from a level
 - `/remove victor` - Remove a victor from a level
 

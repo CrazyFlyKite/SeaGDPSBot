@@ -33,7 +33,7 @@ async def on_ready() -> None:
 	logging.info(f'@{bot.user.name} is now running!')
 
 	try:
-		logging.info(f'Commands synced: {', '.join([cmd.name for cmd in await bot.tree.sync()])}')
+		logging.info(f'Commands synced: {', '.join([command.name for command in await bot.tree.sync()])}')
 	except Exception as exception:
 		logging.error(f'Failed to sync commands: {exception}')
 
