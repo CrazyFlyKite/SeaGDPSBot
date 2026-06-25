@@ -1,5 +1,10 @@
 # Changelog
 
+## 3.1.3 | 25.06.2026
+
+- Added 2P support
+- Fixed `/add victor` verifier bug
+
 ## 3.1.2 | 24.06.2026
 
 - Fixed `use_difficulty` bug

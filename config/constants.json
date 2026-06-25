@@ -31,6 +31,7 @@
 		"new_difficulty": "New level difficulty",
 		"rating": "Level rating",
 		"new_rating": "New level rating",
+		"is_2p": "Is 2-player mode",
 		"list_percentage": "List %",
 		"new_list_percentage": "New list %",
 		"percentage": "%",

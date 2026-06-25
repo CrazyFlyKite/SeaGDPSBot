@@ -16,13 +16,13 @@ class AddGroup(Group, name='add'):
 	@guild_only()
 	@limit_command
 	@restrict_command(arg='list_id', is_list_id=True)
-	@rename(list_id='list', level_id='id')
+	@rename(list_id='list', level_id='id', is_2p='2p')
 	@autocomplete(list_id=list_name_autocomplete, publisher=player_name_autocomplete, verifier=player_name_autocomplete)
 	@choices(difficulty=DIFFICULTIES, rating=RATINGS)
 	@smart_describe()
 	@log_command
 	async def add_level(self, interaction: Interaction, list_id: int, placement: PlacementInt, level_id: LevelIDInt, name: str, publisher: str, verifier: str,
-	                    difficulty: Optional[int] = None, rating: Optional[int] = None, list_percentage: Optional[PercentageInt] = None) -> None:
+	                    difficulty: Optional[int] = None, rating: Optional[int] = None, list_percentage: Optional[PercentageInt] = None, is_2p: Optional[bool] = False) -> None:
 		if not (result := await execute_get('SELECT record_mode, use_list_percentage, use_difficulty FROM lists WHERE list_id = %s', (list_id,))):
 			return await interaction.response.send_message(embed=error_embed(f'This list doesn\'t exist!'), ephemeral=True)
 
@@ -59,8 +59,8 @@ class AddGroup(Group, name='add'):
 
 		await execute_write('UPDATE levels SET placement = placement + 1 WHERE list_id = %s AND placement >= %s ORDER BY placement DESC', (list_id, placement))
 		await execute_write(
-			'INSERT INTO levels (level_id, list_id, placement, level_name, difficulty, rating, list_percentage) VALUES (%s, %s, %s, %s, %s, %s, %s)',
-			(level_id, list_id, placement, name, difficulty, rating, list_percentage if use_list_percentage else None)
+			'INSERT INTO levels (level_id, list_id, placement, level_name, difficulty, rating, is_2p, list_percentage) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)',
+			(level_id, list_id, placement, name, difficulty, rating, is_2p, list_percentage if use_list_percentage else None)
 		)
 		await execute_write('INSERT INTO creators (level_id, player_id, is_publisher) VALUES (%s, %s, TRUE)', (level_id, publisher_data[0][0]))
 		await execute_write('INSERT INTO records (level_id, player_id, percentage, is_verifier) VALUES (%s, %s, %s, TRUE)', (level_id, verifier_data[0][0], None if record_mode == 'time' else 100))
@@ -162,10 +162,10 @@ class AddGroup(Group, name='add'):
 		if not (player_data := await execute_get('SELECT player_id FROM players WHERE player_name = %s', (player_name,))):
 			return await interaction.response.send_message(embed=error_embed(f'Player **{player_name}** is not registered yet! Use `/add player` first :)'), ephemeral=True)
 
-		record_status = await execute_get('SELECT is_verifier FROM records WHERE level_id = %s AND player_id = %s', (level_id, player_data[0][0]))
 
-		if record_status and record_status[0][0] == 1:
-			return await interaction.response.send_message(embed=error_embed(f'**{player_name}** is the verifier of this level!'), ephemeral=True)
+		if record_status := await execute_get('SELECT is_verifier FROM records WHERE level_id = %s AND player_id = %s', (level_id, player_data[0][0])):
+			if record_status[0][0] and use_list_percentage:
+				return await interaction.response.send_message(embed=error_embed(f'**{player_name}** is the verifier of this level!'), ephemeral=True)
 
 		progress: str = f'{percentage}%'
 		if record_mode == 'percentage':
