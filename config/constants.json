@@ -41,6 +41,19 @@
 		"new_player_name": "New player name",
 		"player_nationality": "Player nationality",
 		"thumbnail": "Level thumbnail",
-		"showcase": "Level showcase (YouTube link)"
+		"showcase": "Level showcase"
+	},
+	"allowed_image_formats": {
+		"allowed_extension": [
+			".jpg",
+			".jpeg",
+			".png",
+			".webp"
+		],
+		"allowed_types": [
+			"image/jpeg",
+			"image/png",
+			"image/webp"
+		]
 	}
 }

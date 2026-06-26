@@ -1,7 +1,7 @@
 import json
 import platform
 from os import getenv
-from typing import List, Dict, Any, Final, TypeAlias
+from typing import List, Dict, Any, Final, TypeAlias, Tuple
 
 from discord.app_commands import Choice, Range
 from dotenv import load_dotenv
@@ -42,6 +42,8 @@ DEVELOPER_ID: Final[int] = config.get('developer_id', 0)
 DIFFICULTIES: Final[List[Choice]] = [Choice(name=name, value=value) for name, value in config.get('difficulties', {}).items()]
 RATINGS: Final[List[Choice]] = [Choice(name=name, value=value) for name, value in config.get('ratings', {}).items()]
 DESCRIBED_PARAMETERS: Final[Dict[str, str]] = config.get('described_parameters', [])
+ALLOWED_EXTENSIONS: Final[Tuple[str, ...]] = tuple(config.get('allowed_image_formats', {}).get('allowed_extension', []))
+ALLOWED_TYPES: Final[Tuple[str, ...]] = tuple(config.get('allowed_image_formats', {}).get('allowed_types', []))
 
 with open('config/info_template.md', 'r', encoding='utf-8') as file:
 	INFORMATION_MESSAGE: Final[str] = file.read()

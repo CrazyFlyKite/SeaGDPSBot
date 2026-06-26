@@ -1,4 +1,4 @@
-from typing import Tuple, Optional
+from typing import Optional
 
 from discord import Interaction, Colour
 from discord.app_commands import choices, command, guild_only, autocomplete, rename, Group
@@ -161,7 +161,6 @@ class AddGroup(Group, name='add'):
 
 		if not (player_data := await execute_get('SELECT player_id FROM players WHERE player_name = %s', (player_name,))):
 			return await interaction.response.send_message(embed=error_embed(f'Player **{player_name}** is not registered yet! Use `/add player` first :)'), ephemeral=True)
-
 
 		if record_status := await execute_get('SELECT is_verifier FROM records WHERE level_id = %s AND player_id = %s', (level_id, player_data[0][0])):
 			if record_status[0][0] and use_list_percentage:

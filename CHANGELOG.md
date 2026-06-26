@@ -1,5 +1,10 @@
 # Changelog
 
+## 3.1.4 | 26.06.2026
+
+- Fixed thumbnails bug (critical)
+- Allowed all image types and showcase links
+
 ## 3.1.3 | 25.06.2026
 
 - Added 2P support

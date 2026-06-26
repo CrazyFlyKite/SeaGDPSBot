@@ -7,4 +7,5 @@ services:
     restart: always
     volumes:
       - .:/app
+      - /volume1/web/crazyflykite.com/public/images/thumbnails:/thumbnails
     network_mode: host
