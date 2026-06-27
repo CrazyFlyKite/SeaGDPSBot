@@ -1,5 +1,9 @@
 # Changelog
 
+## 3.1.5 | 26.07.2026
+
+- Remade a little how thumbnails work
+
 ## 3.1.4 | 26.06.2026
 
 - Fixed thumbnails bug (critical)

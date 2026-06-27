@@ -37,7 +37,7 @@ class SetGroup(Group, name='set'):
 			return await interaction.followup.send(embed=error_embed('Level not found!'), ephemeral=True)
 
 		name, publisher, has_thumbnail = result[0]
-		file_path: str = os.path.join(THUMBNAILS_PATH, f'{level_id}.jpg')
+		file_path: str = os.path.join(THUMBNAIL_PATH, f'{level_id}.jpg')
 
 		if not thumbnail:
 			if os.path.exists(file_path):

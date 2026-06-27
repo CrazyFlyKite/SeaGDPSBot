@@ -26,7 +26,7 @@ def require_env(name: str) -> str:
 TOKEN: Final[str] = require_env('LIVE_TOKEN') if getenv('ENV') == 'LIVE' else require_env('DEV_TOKEN')
 MYSQL_USER: Final[str] = require_env('MYSQL_USER')
 MYSQL_PASSWORD: Final[str] = require_env('MYSQL_PASSWORD')
-THUMBNAILS_PATH: Final[str] = require_env('THUMBNAILS_PATH')
+THUMBNAIL_PATH: Final[str] = require_env('THUMBNAIL_PATH')
 
 # Checking IP
 IS_NAS: Final[bool] = platform.system() == 'Linux'

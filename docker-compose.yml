@@ -1,11 +1,11 @@
 version: '3.8'
 
 services:
-  seagdpsbot:
-    build: .
-    container_name: SeaGDPSBot
-    restart: always
-    volumes:
-      - .:/app
-      - /volume1/web/crazyflykite.com/public/images/thumbnails:/thumbnails
-    network_mode: host
+    seagdpsbot:
+        build: .
+        container_name: SeaGDPSBot
+        restart: always
+        volumes:
+            - .:/app
+            - /volume1/shared/seagdps/thumbnails:/thumbnails
+        network_mode: host

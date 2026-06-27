@@ -201,5 +201,5 @@ class AddGroup(Group, name='add'):
 		if player_nationality and player_nationality not in COUNTRIES.values():
 			return await interaction.response.send_message(embed=error_embed('Select a country from the list!'), ephemeral=True)
 
-		await execute_write('INSERT INTO players (player_name, player_nationality) VALUES (%s, %s)', (player_name, player_nationality))
+		await execute_write('INSERT INTO players (player_name, nationality) VALUES (%s, %s)', (player_name, player_nationality))
 		await interaction.response.send_message(embed=success_embed(f'New player **{player_name}** registered!'))
