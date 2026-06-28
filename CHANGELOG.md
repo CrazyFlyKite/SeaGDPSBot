@@ -1,5 +1,9 @@
 # Changelog
 
+## 3.1.7 | 28.06.2026
+
+- Fixed permission issues for the 3rd time I think
+
 ## 3.1.6 | 28.06.2026
 
 - Improved `/remove level` command by also removing the thumbnail (if exists)

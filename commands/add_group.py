@@ -15,7 +15,7 @@ class AddGroup(Group, name='add'):
 	@command(name='level', description='Add a level to the list')
 	@guild_only()
 	@limit_command
-	@restrict_command(arg='list_id', is_list_id=True)
+	@restrict_command(arg='list_id', lookup_by_list=True)
 	@rename(list_id='list', level_id='id', is_2p='2p')
 	@autocomplete(list_id=list_name_autocomplete, publisher=player_name_autocomplete, verifier=player_name_autocomplete)
 	@choices(difficulty=DIFFICULTIES, rating=RATINGS)
@@ -190,7 +190,7 @@ class AddGroup(Group, name='add'):
 	@command(name='player', description='Register a new player to the database')
 	@guild_only()
 	@limit_command
-	@restrict_command(arg='level_id')
+	@restrict_command()
 	@autocomplete(player_nationality=country_autocomplete)
 	@smart_describe()
 	@log_command

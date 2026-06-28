@@ -216,7 +216,7 @@ class EditGroup(Group, name='edit'):
 	@command(name='player_name', description='Edit a player\'s name')
 	@guild_only()
 	@limit_command
-	@restrict_command(arg='level_id')
+	@restrict_command()
 	@autocomplete(old_player_name=player_name_autocomplete)
 	@smart_describe()
 	@log_command
@@ -233,7 +233,7 @@ class EditGroup(Group, name='edit'):
 	@command(name='player_nationality', description='Edit a player\'s nationality')
 	@guild_only()
 	@limit_command
-	@restrict_command(arg='level_id')
+	@restrict_command()
 	@autocomplete(player_name=player_name_autocomplete, player_nationality=country_autocomplete)
 	@smart_describe()
 	@log_command

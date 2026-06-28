@@ -7,6 +7,7 @@ I manage the official SeaGDPS Demonlists.
 - `/add level` - Add a level to the list
 - `/add creator` - Add a creator to a level
 - `/add victor` - Add/Update a victor to/of a level
+- `/add player` - Register a new player to the database
 
 - `/move level` - Move a level to a new placement
 
@@ -21,6 +22,7 @@ I manage the official SeaGDPS Demonlists.
 - `/edit rating` - Edit the rating of a level
 - `/edit list_percentage` - Edit the list % of a level
 - `/edit player_name` - Edit a player's name
+- `/edit player_nationality` - Edit a player's nationality
 
 - `/set thumbnail` - Add, remove or edit the thumbnail to a level
 - `/set showcase` - Add, remove or edit the showcase of a level

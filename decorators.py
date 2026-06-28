@@ -1,7 +1,7 @@
 import logging
 from functools import wraps
 from inspect import signature
-from typing import Optional, Callable
+from typing import Set, Optional, Callable
 
 from discord.app_commands import describe
 
@@ -36,7 +36,7 @@ def limit_command(command: Callable) -> Callable:
 	return wrapper
 
 
-def restrict_command(arg: str, is_list_id: Optional[bool] = False) -> Callable:
+def restrict_command(arg: Optional[str] = None, lookup_by_list: Optional[bool] = False) -> Callable:
 	def decorator(command) -> Callable:
 		@wraps(command)
 		async def wrapper(*args, **kwargs) -> None:
@@ -45,18 +45,25 @@ def restrict_command(arg: str, is_list_id: Optional[bool] = False) -> Callable:
 			if interaction.user.id == DEVELOPER_ID:
 				return await command(*args, **kwargs)
 
-			if is_list_id:
-				result = await execute_get('SELECT moderator_role_id FROM lists WHERE list_id = %s', (kwargs.get(arg),))
+			user_role_ids: Set[int] = {role.id for role in interaction.user.roles}
+
+			if arg is None:
+				result = await execute_get('SELECT DISTINCT moderator_role_id FROM lists')
+				allowed_role_ids: Set[int] = {row[0] for row in result if row[0] is not None}
+
+				if user_role_ids & allowed_role_ids:
+					return await command(*args, **kwargs)
 			else:
-				result = await execute_get('SELECT li.moderator_role_id FROM levels l JOIN lists li ON l.list_id = li.list_id WHERE l.level_id = %s', (kwargs.get(arg),))
+				if lookup_by_list:
+					result = await execute_get('SELECT moderator_role_id FROM lists WHERE list_id = %s', (kwargs.get(arg),))
+				else:
+					result = await execute_get('SELECT li.moderator_role_id FROM levels l JOIN lists li ON l.list_id = li.list_id WHERE l.level_id = %s', (kwargs.get(arg),))
 
-			if not result:
-				return await interaction.response.send_message(embed=error_embed('This list doesn\'t exist!'), ephemeral=True)
+				if not result:
+					return await interaction.response.send_message(embed=error_embed('Permission error occurred!'), ephemeral=True)
 
-			role_id = result[0][0]
-
-			if role_id and any(r.id == role_id for r in interaction.user.roles):
-				return await command(*args, **kwargs)
+				if result[0][0] in user_role_ids:
+					return await command(*args, **kwargs)
 
 			return await interaction.response.send_message(embed=error_embed('You have no permissions to use this command!'), ephemeral=True)
 
