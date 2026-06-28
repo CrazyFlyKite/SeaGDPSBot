@@ -48,7 +48,7 @@ class SetGroup(Group, name='set'):
 				return await interaction.followup.send(embed=error_embed(f'**{name}** has no thumbnail to remove!'), ephemeral=True)
 
 		if not (thumbnail.filename.lower().endswith(ALLOWED_EXTENSIONS) and thumbnail.content_type in ALLOWED_TYPES):
-			return await interaction.followup.send(embed=error_embed('Only **.jpg** files are allowed!'), ephemeral=True)
+			return await interaction.followup.send(embed=error_embed(f'Only {', '.join(f'**{ext}**' for ext in ALLOWED_EXTENSIONS)} files are allowed!'), ephemeral=True)
 
 		try:
 			image = Image.open(BytesIO(await thumbnail.read()))

@@ -10,7 +10,7 @@
 
 ## Introduction
 
-**SeaGDPSBot** is a Discord bot for managing the official **SeaGDPS Demonlist**: **https://crazyflykite.com/seagdps**
+**SeaGDPSBot** is a Discord bot for managing the official **SeaGDPS Demonlists**: **https://crazyflykite.com/seagdps**
 
 - Detailed command documentation can be found in [`config/info_template.md`](config/info_template.md)
 - Version changelog can be found in [`CHANGELOG.md`](CHANGELOG.md)
@@ -47,7 +47,7 @@ ENV=DEV/LIVE
 LIVE_TOKEN=???
 DEV_TOKEN=???
 
-THUMBNAILS_PATH=/???/???/???/???/
+THUMBNAILS_PATH=/???/thumbnails
 
 MYSQL_USER=???
 MYSQL_PASSWORD=???

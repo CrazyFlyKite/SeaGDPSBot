@@ -1,4 +1,4 @@
-I manage the official SeaGDPS Demonlist.
+I manage the official SeaGDPS Demonlists.
 
 ## Public Commands
 - `/info` - Show information about the bot

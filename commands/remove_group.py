@@ -1,3 +1,5 @@
+import os
+
 from discord import Interaction
 from discord.app_commands import command, guild_only, autocomplete, rename, Group
 
@@ -28,6 +30,11 @@ class RemoveGroup(Group, name='remove'):
 
 		if not result:
 			return await interaction.response.send_message(embed=error_embed('Level not found!'), ephemeral=True)
+
+		try:
+			os.remove(os.path.join(THUMBNAIL_PATH, f'{level_id}.jpg'))
+		except FileNotFoundError:
+			pass
 
 		list_id, placement, name, publisher = result[0]
 

@@ -1,6 +1,10 @@
 # Changelog
 
-## 3.1.5 | 26.07.2026
+## 3.1.6 | 28.06.2026
+
+- Improved `/remove level` command by also removing the thumbnail (if exists)
+
+## 3.1.5 | 27.06.2026
 
 - Remade a little how thumbnails work
 
