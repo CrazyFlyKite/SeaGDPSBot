@@ -1,5 +1,9 @@
 # Changelog
 
+## 3.1.8 | 29.06.2026
+
+- Added showcase link normalizer
+
 ## 3.1.7 | 28.06.2026
 
 - Fixed permission issues for the 3rd time I think

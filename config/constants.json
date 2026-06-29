@@ -55,5 +55,10 @@
 			"image/png",
 			"image/webp"
 		]
-	}
+	},
+	"allowed_showcase_links": [
+		"https://www.youtube.com/watch?v=",
+		"https://youtu.be/",
+		"https://files.catbox.moe/"
+	]
 }

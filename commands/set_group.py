@@ -9,7 +9,7 @@ from discord.app_commands import command, guild_only, autocomplete, rename, Grou
 from database import execute_get, execute_write
 from decorators import log_command, limit_command, restrict_command, smart_describe
 from embeds import success_embed, error_embed
-from help_functions import level_autocomplete
+from help_functions import level_autocomplete, normalize_showcase_url
 from utilities import *
 
 
@@ -43,7 +43,7 @@ class SetGroup(Group, name='set'):
 			if os.path.exists(file_path):
 				os.remove(file_path)
 				await execute_write('UPDATE levels SET has_thumbnail = %s WHERE level_id = %s', (False, level_id))
-				return await interaction.followup.send(embed=success_embed(f'Removed thumbnail from \"**{name}**\" by {publisher}!'), ephemeral=False)
+				return await interaction.followup.send(embed=success_embed(f'Removed thumbnail from \"**{name}**\" by {publisher}!'))
 			else:
 				return await interaction.followup.send(embed=error_embed(f'**{name}** has no thumbnail to remove!'), ephemeral=True)
 
@@ -59,7 +59,7 @@ class SetGroup(Group, name='set'):
 
 			image.save(file_path, format='JPEG', quality=95)
 			await execute_write('UPDATE levels SET has_thumbnail = %s WHERE level_id = %s', (True, level_id))
-			await interaction.followup.send(embed=success_embed(f'Set a thumbnail for \"**{name}**\" by {publisher}!'), ephemeral=False)
+			await interaction.followup.send(embed=success_embed(f'Set a thumbnail for \"**{name}**\" by {publisher}!'))
 		except Exception as exception:
 			await interaction.followup.send(embed=error_embed(f'System Error: {exception}'), ephemeral=True)
 
@@ -90,7 +90,10 @@ class SetGroup(Group, name='set'):
 				return await interaction.response.send_message(embed=error_embed(f'\"**{name}**\" by {publisher} already has no showcase video!'), ephemeral=True)
 
 			await execute_write('UPDATE levels SET showcase = %s WHERE level_id = %s', (None, level_id))
-			return await interaction.response.send_message(embed=success_embed(f'Removed showcase from \"**{name}**\" by {publisher}!'), ephemeral=False)
+			return await interaction.response.send_message(embed=success_embed(f'Removed showcase from \"**{name}**\" by {publisher}!'))
 
-		await execute_write('UPDATE levels SET showcase = %s WHERE level_id = %s', (showcase, level_id))
-		await interaction.response.send_message(embed=success_embed(f'Updated the showcase for \"**{name}**\" by {publisher}!'), ephemeral=False)
+		if not any(showcase.startswith(link) for link in ALLOWED_SHOWCASE_LINKS):
+			return await interaction.response.send_message(embed=error_embed(f'Only links starting with {', '.join(f'**{link}**' for link in ALLOWED_SHOWCASE_LINKS)} are allowed!'), ephemeral=True)
+
+		await execute_write('UPDATE levels SET showcase = %s WHERE level_id = %s', (normalize_showcase_url(showcase), level_id))
+		await interaction.response.send_message(embed=success_embed(f'Updated the showcase for \"**{name}**\" by {publisher}!'))

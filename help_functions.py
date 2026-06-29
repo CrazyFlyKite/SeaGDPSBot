@@ -1,3 +1,5 @@
+from urllib.parse import urlparse, parse_qs, ParseResult
+
 from discord import Interaction
 
 from database import execute_get
@@ -36,3 +38,32 @@ async def country_autocomplete(interaction: Interaction, current: str) -> List[C
 		for name, code in COUNTRIES.items()
 		if current.lower() in name.lower()
 	][:25]
+
+
+def normalize_showcase_url(url: str) -> str:
+	parsed: ParseResult = urlparse(url)
+
+	if parsed.netloc in {'www.youtube.com', 'youtube.com', 'm.youtube.com'} and parsed.path == '/watch':
+		query: Dict[str, List[str]] = parse_qs(parsed.query)
+		video_id: str = query.get('v', [None])[0]
+
+		if video_id:
+			result = f'https://youtu.be/{video_id}'
+
+			if 't' in query:
+				result += f'?t={query['t'][0]}'
+
+			return result
+
+	if parsed.netloc == 'youtu.be':
+		video_id = parsed.path.lstrip('/').split('/')[0]
+		result = f'https://youtu.be/{video_id}'
+
+		query = parse_qs(parsed.query)
+
+		if 't' in query:
+			result += f'?t={query['t'][0]}'
+
+		return result
+
+	return url
