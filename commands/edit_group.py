@@ -104,9 +104,9 @@ class EditGroup(Group, name='edit'):
 
 		await execute_write('UPDATE records SET is_verifier = FALSE WHERE level_id = %s AND is_verifier = TRUE', (level_id,))
 		await execute_write('''
-        INSERT INTO records (level_id, player_id, progress, is_verifier)
+        INSERT INTO records (level_id, player_id, percentage, is_verifier)
         VALUES (%s, %s, 100, 1)
-        ON DUPLICATE KEY UPDATE is_verifier = TRUE, progress = 100
+        ON DUPLICATE KEY UPDATE is_verifier = TRUE, percentage = 100
 	    ''', (level_id, new_player_data[0][0]))
 
 		await interaction.response.send_message(embed=success_embed(f'The verifier of \"**{level_name}**\" by {publisher} changed from **{old_verifier_name}** to **{new_verifier}**!'))

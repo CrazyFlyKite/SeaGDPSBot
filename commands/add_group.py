@@ -158,6 +158,9 @@ class AddGroup(Group, name='add'):
 			else:
 				if percentage < 100:
 					return await interaction.response.send_message(embed=error_embed('This list requires 100% completions!'), ephemeral=True)
+		elif record_mode == 'time':
+			if time is None:
+				return await interaction.response.send_message(embed=error_embed('This list uses time records. Please, provide a completion time!'), ephemeral=True)
 
 		if not (player_data := await execute_get('SELECT player_id FROM players WHERE player_name = %s', (player_name,))):
 			return await interaction.response.send_message(embed=error_embed(f'Player **{player_name}** is not registered yet! Use `/add player` first :)'), ephemeral=True)

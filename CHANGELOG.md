@@ -1,5 +1,10 @@
 # Changelog
 
+## 3.1.9 | 09.08.2026
+
+- Fixed the `/edit verifier` command
+- Fixed `/add record` bug involving completion time
+
 ## 3.1.8 | 29.06.2026
 
 - Added showcase link normalizer
