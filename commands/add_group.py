@@ -42,7 +42,7 @@ class AddGroup(Group, name='add'):
 		if not verifier_data:
 			return await interaction.response.send_message(embed=error_embed(f'The verifier isn\'t registered yet! Use `/add player` first.'), ephemeral=True)
 
-		max_placement: int = (await execute_get('SELECT MAX(placement) FROM levels WHERE list_id = %s', (list_id,)))[0][0] + 1
+		max_placement: int = ((await execute_get('SELECT MAX(placement) FROM levels WHERE list_id = %s', (list_id,)))[0][0] or 0) + 1
 
 		if not (1 <= placement <= max_placement):
 			return await interaction.response.send_message(embed=error_embed(f'The placement be between **1** and **{max_placement}**!'), ephemeral=True)

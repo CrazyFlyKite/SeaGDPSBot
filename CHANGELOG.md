@@ -1,5 +1,9 @@
 # Changelog
 
+# 3.1.10 | 10.08.2026
+
+- Fixed empty list bug
+
 ## 3.1.9 | 09.08.2026
 
 - Fixed the `/edit verifier` command
