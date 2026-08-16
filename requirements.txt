@@ -1,4 +1,4 @@
-discord~=2.3.2
+discord-py~=2.7.1
 mysql-connector-python~=26.7.0
 pillow~=12.3.0
-python-dotenv~=1.2.1
+python-dotenv~=1.2.2

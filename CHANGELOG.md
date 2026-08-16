@@ -1,5 +1,9 @@
 # Changelog
 
+# 3.1.11 | 17.08.2026
+
+- Fixed minor bugs (not even worth mentioning)
+
 # 3.1.10 | 10.08.2026
 
 - Fixed empty list bug

@@ -23,10 +23,10 @@ class AddGroup(Group, name='add'):
 	@log_command
 	async def add_level(self, interaction: Interaction, list_id: int, placement: PlacementInt, level_id: LevelIDInt, name: str, publisher: str, verifier: str,
 	                    difficulty: Optional[int] = None, rating: Optional[int] = None, list_percentage: Optional[PercentageInt] = None, is_2p: Optional[bool] = False) -> None:
-		if not (result := await execute_get('SELECT record_mode, use_list_percentage, use_difficulty FROM lists WHERE list_id = %s', (list_id,))):
+		if not (result := await execute_get('SELECT display_name, record_mode, use_list_percentage, use_difficulty FROM lists WHERE list_id = %s', (list_id,))):
 			return await interaction.response.send_message(embed=error_embed(f'This list doesn\'t exist!'), ephemeral=True)
 
-		record_mode, use_list_percentage, use_difficulty = result[0]
+		display_name, record_mode, use_list_percentage, use_difficulty = result[0]
 
 		if await execute_get('SELECT level_name FROM levels WHERE level_id = %s', (level_id,)):
 			return await interaction.response.send_message(embed=error_embed(f'Level with ID **{level_id}** already exists!'), ephemeral=True)
@@ -82,7 +82,7 @@ class AddGroup(Group, name='add'):
 
 		await interaction.response.send_message(
 			embed=embed(
-				title=f'\"{name}\" by {publisher} placed at #{placement} on the list!',
+				title=f'\"{name}\" by {publisher} placed at #{placement} on the {display_name}!',
 				description=audit_description,
 				footer=f'Level ID: {level_id}',
 				color=Colour.green()
@@ -179,7 +179,7 @@ class AddGroup(Group, name='add'):
 			''', (level_id, player_data[0][0], percentage, percentage))
 		elif record_mode == 'time':
 			try:
-				progress: str = str(time)
+				progress = str(time)
 				await execute_write('''
 				INSERT INTO records (level_id, player_id, time_spent)
 				VALUES (%s, %s, %s)
