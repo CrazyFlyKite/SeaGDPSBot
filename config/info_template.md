@@ -27,6 +27,9 @@ I manage the official SeaGDPS Demonlists.
 - `/set thumbnail` - Add, remove or edit the thumbnail to a level
 - `/set showcase` - Add, remove or edit the showcase of a level
 
+- `/ban add` - Ban a player
+- `/ban remove` - Unban a player
+
 ## More
 - **[Website](<https://crazyflykite.com/seagdps>)**
 - **[Developer](<https://discord.com/users/873920068571000833>)**

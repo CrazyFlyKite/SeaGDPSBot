@@ -45,9 +45,7 @@ DESCRIBED_PARAMETERS: Final[Dict[str, str]] = config.get('described_parameters',
 ALLOWED_EXTENSIONS: Final[Tuple[str, ...]] = tuple(config.get('allowed_image_formats', {}).get('allowed_extension', []))
 ALLOWED_TYPES: Final[Tuple[str, ...]] = tuple(config.get('allowed_image_formats', {}).get('allowed_types', []))
 ALLOWED_SHOWCASE_LINKS: Final[List[str]] = config.get('allowed_showcase_links', [])
+COUNTRIES_LINK: Final[str] = config.get('countries_link', '')
 
 with open('config/info_template.md', 'r', encoding='utf-8') as file:
 	INFORMATION_MESSAGE: Final[str] = file.read()
-
-with open('config/countries.json', 'r', encoding='utf-8') as file:
-	COUNTRIES: Final[Dict[str, str]] = json.load(file)

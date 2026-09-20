@@ -1,3 +1,4 @@
+import requests
 from discord import Interaction
 from discord.app_commands import choices, command, guild_only, autocomplete, rename, Group
 
@@ -238,13 +239,15 @@ class EditGroup(Group, name='edit'):
 	@smart_describe()
 	@log_command
 	async def edit_player_nationality(self, interaction: Interaction, player_name: str, player_nationality: str) -> None:
+		countries: Dict[str, str] = requests.get(COUNTRIES_LINK).json()
+
 		if not (player_data := await execute_get('SELECT player_id FROM players WHERE player_name = %s', (player_name,))):
 			return await interaction.response.send_message(embed=error_embed(f'Player **{player_name}** not found!'), ephemeral=True)
 
-		if player_nationality and player_nationality not in COUNTRIES.values():
+		if player_nationality and player_nationality not in countries.keys():
 			return await interaction.response.send_message(embed=error_embed('Select a country from the list!'), ephemeral=True)
 
-		country_name: str = next((name for name, code in COUNTRIES.items() if code == player_nationality), 'Unknown')
+		country_name: str = next((name for code, name in countries.items() if code == player_nationality), 'Unknown')
 
 		await execute_write('UPDATE players SET nationality = %s WHERE player_id = %s', (player_nationality, player_data[0][0]))
 		await interaction.response.send_message(embed=success_embed(f'The nationality of **{player_name}** changed to **{country_name}**!'))

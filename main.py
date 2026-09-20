@@ -5,6 +5,7 @@ from discord.app_commands import AppCommandError, MissingRole, MissingAnyRole, N
 from discord.ext.commands import Bot
 
 from commands.add_group import AddGroup
+from commands.ban_group import BanGroup
 from commands.edit_group import EditGroup
 from commands.move_group import MoveGroup
 from commands.remove_group import RemoveGroup
@@ -62,6 +63,7 @@ def main() -> None:
 	bot.tree.add_command(MoveGroup())
 	bot.tree.add_command(EditGroup())
 	bot.tree.add_command(SetGroup())
+	bot.tree.add_command(BanGroup())
 	bot.run(TOKEN)
 
 

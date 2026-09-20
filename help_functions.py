@@ -1,4 +1,5 @@
 from urllib.parse import urlparse, parse_qs, ParseResult
+import requests
 
 from discord import Interaction
 
@@ -35,7 +36,7 @@ async def list_name_autocomplete(interaction: Interaction, current: str) -> List
 async def country_autocomplete(interaction: Interaction, current: str) -> List[Choice]:
 	return [
 		Choice(name=name, value=code)
-		for name, code in COUNTRIES.items()
+		for code, name in requests.get(COUNTRIES_LINK).json().items()
 		if current.lower() in name.lower()
 	][:25]
 

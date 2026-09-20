@@ -1,6 +1,12 @@
 # Changelog
 
-# 3.1.11 | 17.08.2026
+## 3.2 | 20.09.2026
+
+- Added mobile functionality
+- Added `/ban add` & `/ban remove` commands
+- Made countries dictionary dependent on the [website](https://crazyflykite.com/other/countries.json)
+
+## 3.1.11 | 17.08.2026
 
 - Fixed minor bugs (not even worth mentioning)
 

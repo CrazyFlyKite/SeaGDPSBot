@@ -34,6 +34,7 @@
 		"is_2p": "Is 2-player mode",
 		"list_percentage": "List %",
 		"new_list_percentage": "New list %",
+		"is_mobile": "Whether the player play on mobile",
 		"percentage": "%",
 		"time": "Time (Format: HH:MM:SS.mmm)",
 		"player_name": "Player name",
@@ -60,5 +61,6 @@
 		"https://www.youtube.com/watch?v=",
 		"https://youtu.be/",
 		"https://files.catbox.moe/"
-	]
+	],
+	"countries_link": "https://crazyflykite.com/other/countries.json"
 }

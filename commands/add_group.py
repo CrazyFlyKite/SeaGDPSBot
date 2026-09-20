@@ -1,5 +1,6 @@
 from typing import Optional
 
+import requests
 from discord import Interaction, Colour
 from discord.app_commands import choices, command, guild_only, autocomplete, rename, Group
 from mysql.connector import DataError
@@ -16,12 +17,12 @@ class AddGroup(Group, name='add'):
 	@guild_only()
 	@limit_command
 	@restrict_command(arg='list_id', lookup_by_list=True)
-	@rename(list_id='list', level_id='id', is_2p='2p')
+	@rename(list_id='list', level_id='id', is_mobile='verifier_is_mobile', is_2p='2p')
 	@autocomplete(list_id=list_name_autocomplete, publisher=player_name_autocomplete, verifier=player_name_autocomplete)
 	@choices(difficulty=DIFFICULTIES, rating=RATINGS)
 	@smart_describe()
 	@log_command
-	async def add_level(self, interaction: Interaction, list_id: int, placement: PlacementInt, level_id: LevelIDInt, name: str, publisher: str, verifier: str,
+	async def add_level(self, interaction: Interaction, list_id: int, placement: PlacementInt, level_id: LevelIDInt, name: str, publisher: str, verifier: str, is_mobile: bool,
 	                    difficulty: Optional[int] = None, rating: Optional[int] = None, list_percentage: Optional[PercentageInt] = None, is_2p: Optional[bool] = False) -> None:
 		if not (result := await execute_get('SELECT display_name, record_mode, use_list_percentage, use_difficulty FROM lists WHERE list_id = %s', (list_id,))):
 			return await interaction.response.send_message(embed=error_embed(f'This list doesn\'t exist!'), ephemeral=True)
@@ -63,7 +64,10 @@ class AddGroup(Group, name='add'):
 			(level_id, list_id, placement, name, difficulty, rating, is_2p, list_percentage if use_list_percentage else None)
 		)
 		await execute_write('INSERT INTO creators (level_id, player_id, is_publisher) VALUES (%s, %s, TRUE)', (level_id, publisher_data[0][0]))
-		await execute_write('INSERT INTO records (level_id, player_id, percentage, is_verifier) VALUES (%s, %s, %s, TRUE)', (level_id, verifier_data[0][0], None if record_mode == 'time' else 100))
+		await execute_write(
+			'INSERT INTO records (level_id, player_id, percentage, is_verifier, is_mobile) VALUES (%s, %s, %s, %s, TRUE)',
+			(level_id, verifier_data[0][0], is_mobile, None if record_mode == 'time' else 100)
+		)
 
 		audit_description: str = ''
 
@@ -130,7 +134,7 @@ class AddGroup(Group, name='add'):
 	@autocomplete(level_id=level_autocomplete, player_name=player_name_autocomplete)
 	@smart_describe()
 	@log_command
-	async def add_victor(self, interaction: Interaction, level_id: LevelIDInt, player_name: str, percentage: Optional[PercentageInt] = None, time: Optional[str] = None) -> None:
+	async def add_victor(self, interaction: Interaction, level_id: LevelIDInt, player_name: str, is_mobile: bool, percentage: Optional[PercentageInt] = None, time: Optional[str] = None) -> None:
 		result = await execute_get('''
 		SELECT l.level_name, p.player_name, l.list_percentage, li.record_mode, li.use_list_percentage
         FROM levels l
@@ -172,21 +176,21 @@ class AddGroup(Group, name='add'):
 		progress: str = f'{percentage}%'
 		if record_mode == 'percentage':
 			await execute_write('''
-			INSERT INTO records (level_id, player_id, percentage)
-			VALUES (%s, %s, %s)
+			INSERT INTO records (level_id, player_id, percentage, is_mobile)
+			VALUES (%s, %s, %s, %s)
 			ON DUPLICATE KEY UPDATE
 			percentage = %s
-			''', (level_id, player_data[0][0], percentage, percentage))
+			''', (level_id, player_data[0][0], percentage, is_mobile, percentage))
 		elif record_mode == 'time':
 			try:
 				progress = str(time)
 				await execute_write('''
-				INSERT INTO records (level_id, player_id, time_spent)
-				VALUES (%s, %s, %s)
+				INSERT INTO records (level_id, player_id, time_spent, is_mobile)
+				VALUES (%s, %s, %s, %s)
 				ON DUPLICATE KEY UPDATE time_spent = %s
-				''', (level_id, player_data[0][0], time, time))
+				''', (level_id, player_data[0][0], time, is_mobile, time))
 			except DataError:
-				return await interaction.response.send_message(embed=error_embed(f'The time is in incorrect format!'), ephemeral=True)
+				return await interaction.response.send_message(embed=error_embed(f'The time isn\'t in an correct format!'), ephemeral=True)
 
 		await interaction.response.send_message(embed=success_embed(f'Added/Updated record for **{player_name}** (**{progress}**) on \"**{level_name}**\" by {publisher}!'))
 
@@ -201,8 +205,9 @@ class AddGroup(Group, name='add'):
 		if await execute_get('SELECT player_name FROM players WHERE LOWER(player_name) = LOWER(%s)', (player_name,)):
 			return await interaction.response.send_message(embed=error_embed(f'Player **{player_name}** is already registered!'), ephemeral=True)
 
-		if player_nationality and player_nationality not in COUNTRIES.values():
+		countries: Dict[str, str] = requests.get(COUNTRIES_LINK).json()
+		if player_nationality and player_nationality not in countries.keys():
 			return await interaction.response.send_message(embed=error_embed('Select a country from the list!'), ephemeral=True)
 
 		await execute_write('INSERT INTO players (player_name, nationality) VALUES (%s, %s)', (player_name, player_nationality))
-		await interaction.response.send_message(embed=success_embed(f'New player **{player_name}** registered!'))
+		await interaction.response.send_message(embed=success_embed(f'New player **{player_name}** registered! Welcome!'))
