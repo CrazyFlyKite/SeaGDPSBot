@@ -1,5 +1,10 @@
 # Changelog
 
+## 3.2.1 | 22.09.2026
+
+- Separated creators from publishers
+- Added level name constraints
+
 ## 3.2 | 20.09.2026
 
 - Added mobile functionality

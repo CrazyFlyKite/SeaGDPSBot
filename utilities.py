@@ -45,6 +45,7 @@ DESCRIBED_PARAMETERS: Final[Dict[str, str]] = config.get('described_parameters',
 ALLOWED_EXTENSIONS: Final[Tuple[str, ...]] = tuple(config.get('allowed_image_formats', {}).get('allowed_extension', []))
 ALLOWED_TYPES: Final[Tuple[str, ...]] = tuple(config.get('allowed_image_formats', {}).get('allowed_types', []))
 ALLOWED_SHOWCASE_LINKS: Final[List[str]] = config.get('allowed_showcase_links', [])
+ALLOWED_LEVEL_NAME_CHARACTERS: Final[str] = config.get('allowed_level_name_characters', '')
 COUNTRIES_LINK: Final[str] = config.get('countries_link', '')
 
 with open('config/info_template.md', 'r', encoding='utf-8') as file:

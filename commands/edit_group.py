@@ -10,7 +10,7 @@ from utilities import *
 
 
 class EditGroup(Group, name='edit'):
-	@command(name='name', description='Edit the name of a level')
+	@command(name='level_name', description='Edit the name of a level')
 	@guild_only()
 	@limit_command
 	@restrict_command(arg='level_id')
@@ -18,7 +18,7 @@ class EditGroup(Group, name='edit'):
 	@autocomplete(level_id=level_autocomplete)
 	@smart_describe()
 	@log_command
-	async def edit_name(self, interaction: Interaction, level_id: LevelIDInt, new_name: str) -> None:
+	async def edit_level_name(self, interaction: Interaction, level_id: LevelIDInt, new_level_name: str) -> None:
 		result = await execute_get('''
 		SELECT l.level_name, p.player_name
         FROM levels l
@@ -30,13 +30,16 @@ class EditGroup(Group, name='edit'):
 		if not result:
 			return await interaction.response.send_message(embed=error_embed('Level not found!'), ephemeral=True)
 
+		if not all(character in ALLOWED_LEVEL_NAME_CHARACTERS for character in new_level_name):
+			return await interaction.response.send_message(embed=error_embed(f'New level name contains illegal characters!'), ephemeral=True)
+
 		old_name, publisher = result[0]
 
-		if old_name == new_name:
+		if old_name == new_level_name:
 			return await interaction.response.send_message(embed=error_embed('The new name is the same as the current name!'), ephemeral=True)
 
-		await execute_write('UPDATE levels SET level_name = %s WHERE level_id = %s', (new_name, level_id))
-		await interaction.response.send_message(embed=success_embed(f'\"**{old_name}**\" by {publisher} renamed to \"**{new_name}**\"!'))
+		await execute_write('UPDATE levels SET level_name = %s WHERE level_id = %s', (new_level_name, level_id))
+		await interaction.response.send_message(embed=success_embed(f'\"**{old_name}**\" by {publisher} renamed to \"**{new_level_name}**\"!'))
 
 	@command(name='publisher', description='Edit the publisher of a level')
 	@guild_only()
@@ -56,12 +59,19 @@ class EditGroup(Group, name='edit'):
 			return await interaction.response.send_message(embed=error_embed(f'Player **{publisher}** is not registered!'), ephemeral=True)
 
 		player_id, player_name = player_data[0]
-		current_publisher = await execute_get('SELECT player_id FROM creators WHERE level_id = %s AND is_publisher = TRUE', (level_id,))
+		current_publisher = await execute_get('SELECT player_id, is_creator FROM creators WHERE level_id = %s AND is_publisher = TRUE', (level_id,))
 
 		if current_publisher and current_publisher[0][0] == player_id:
 			return await interaction.response.send_message(embed=error_embed(f'**{player_name}** is already the publisher!'), ephemeral=True)
 
-		await execute_write('UPDATE creators SET is_publisher = FALSE WHERE level_id = %s AND is_publisher = TRUE', (level_id,))
+		if current_publisher:
+			old_publisher_id, old_is_creator = current_publisher[0]
+
+			if old_is_creator:
+				await execute_write('UPDATE creators SET is_publisher = FALSE WHERE level_id = %s AND player_id = %s', (level_id, old_publisher_id))
+			else:
+				await execute_write('DELETE FROM creators WHERE level_id = %s AND player_id = %s', (level_id, old_publisher_id))
+
 		await execute_write('INSERT INTO creators (level_id, player_id, is_publisher) VALUES (%s, %s, TRUE) ON DUPLICATE KEY UPDATE is_publisher = TRUE', (level_id, player_id))
 
 		await interaction.response.send_message(embed=success_embed(f'The publisher of \"**{level_name}**\" changed to **{player_name}**!'))
@@ -235,19 +245,19 @@ class EditGroup(Group, name='edit'):
 	@guild_only()
 	@limit_command
 	@restrict_command()
-	@autocomplete(player_name=player_name_autocomplete, player_nationality=country_autocomplete)
+	@autocomplete(player=player_name_autocomplete, nationality=country_autocomplete)
 	@smart_describe()
 	@log_command
-	async def edit_player_nationality(self, interaction: Interaction, player_name: str, player_nationality: str) -> None:
+	async def edit_player_nationality(self, interaction: Interaction, player: str, nationality: str) -> None:
 		countries: Dict[str, str] = requests.get(COUNTRIES_LINK).json()
 
-		if not (player_data := await execute_get('SELECT player_id FROM players WHERE player_name = %s', (player_name,))):
-			return await interaction.response.send_message(embed=error_embed(f'Player **{player_name}** not found!'), ephemeral=True)
+		if not (player_data := await execute_get('SELECT player_id FROM players WHERE player_name = %s', (player,))):
+			return await interaction.response.send_message(embed=error_embed(f'Player **{player}** not found!'), ephemeral=True)
 
-		if player_nationality and player_nationality not in countries.keys():
+		if nationality and nationality not in countries.keys():
 			return await interaction.response.send_message(embed=error_embed('Select a country from the list!'), ephemeral=True)
 
-		country_name: str = next((name for code, name in countries.items() if code == player_nationality), 'Unknown')
+		country_name: str = next((name for code, name in countries.items() if code == nationality), 'Unknown')
 
-		await execute_write('UPDATE players SET nationality = %s WHERE player_id = %s', (player_nationality, player_data[0][0]))
-		await interaction.response.send_message(embed=success_embed(f'The nationality of **{player_name}** changed to **{country_name}**!'))
+		await execute_write('UPDATE players SET nationality = %s WHERE player_id = %s', (nationality, player_data[0][0]))
+		await interaction.response.send_message(embed=success_embed(f'The nationality of **{player}** changed to **{country_name}**!'))

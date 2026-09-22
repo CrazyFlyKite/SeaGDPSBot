@@ -21,10 +21,11 @@
 		"level_id": "Level ID",
 		"placement": "Placement on the list",
 		"new_placement": "New placement on the list",
-		"name": "Level name",
-		"new_name": "New level name",
+		"level_name": "Level name",
+		"new_level_name": "New level name",
 		"creator": "Level creator",
 		"publisher": "Level publisher",
+		"victor": "Level victor",
 		"verifier": "Level verifier",
 		"new_verifier": "New level verifier",
 		"difficulty": "Level difficulty",
@@ -37,7 +38,6 @@
 		"is_mobile": "Whether the player play on mobile",
 		"percentage": "%",
 		"time": "Time (Format: HH:MM:SS.mmm)",
-		"player_name": "Player name",
 		"old_player_name": "Old player name",
 		"new_player_name": "New player name",
 		"player_nationality": "Player nationality",
@@ -62,5 +62,6 @@
 		"https://youtu.be/",
 		"https://files.catbox.moe/"
 	],
+	"allowed_level_name_characters": "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890 ",
 	"countries_link": "https://crazyflykite.com/other/countries.json"
 }

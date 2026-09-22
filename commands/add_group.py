@@ -22,7 +22,7 @@ class AddGroup(Group, name='add'):
 	@choices(difficulty=DIFFICULTIES, rating=RATINGS)
 	@smart_describe()
 	@log_command
-	async def add_level(self, interaction: Interaction, list_id: int, placement: PlacementInt, level_id: LevelIDInt, name: str, publisher: str, verifier: str, is_mobile: bool,
+	async def add_level(self, interaction: Interaction, list_id: int, placement: PlacementInt, level_id: LevelIDInt, level_name: str, publisher: str, verifier: str, is_mobile: bool,
 	                    difficulty: Optional[int] = None, rating: Optional[int] = None, list_percentage: Optional[PercentageInt] = None, is_2p: Optional[bool] = False) -> None:
 		if not (result := await execute_get('SELECT display_name, record_mode, use_list_percentage, use_difficulty FROM lists WHERE list_id = %s', (list_id,))):
 			return await interaction.response.send_message(embed=error_embed(f'This list doesn\'t exist!'), ephemeral=True)
@@ -31,6 +31,9 @@ class AddGroup(Group, name='add'):
 
 		if await execute_get('SELECT level_name FROM levels WHERE level_id = %s', (level_id,)):
 			return await interaction.response.send_message(embed=error_embed(f'Level with ID **{level_id}** already exists!'), ephemeral=True)
+
+		if not all(character in ALLOWED_LEVEL_NAME_CHARACTERS for character in level_name):
+			return await interaction.response.send_message(embed=error_embed(f'Level name contains illegal characters!'), ephemeral=True)
 
 		list_context: List[Tuple[int, str]] = await execute_get('SELECT placement, level_name FROM levels WHERE list_id = %s AND placement IN (10, 25)', (list_id,))
 		ctx_map: Dict[int, str] = {row[0]: row[1] for row in list_context}
@@ -61,7 +64,7 @@ class AddGroup(Group, name='add'):
 		await execute_write('UPDATE levels SET placement = placement + 1 WHERE list_id = %s AND placement >= %s ORDER BY placement DESC', (list_id, placement))
 		await execute_write(
 			'INSERT INTO levels (level_id, list_id, placement, level_name, difficulty, rating, is_2p, list_percentage) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)',
-			(level_id, list_id, placement, name, difficulty, rating, is_2p, list_percentage if use_list_percentage else None)
+			(level_id, list_id, placement, level_name, difficulty, rating, is_2p, list_percentage if use_list_percentage else None)
 		)
 		await execute_write('INSERT INTO creators (level_id, player_id, is_publisher) VALUES (%s, %s, TRUE)', (level_id, publisher_data[0][0]))
 		await execute_write(
@@ -86,14 +89,14 @@ class AddGroup(Group, name='add'):
 
 		await interaction.response.send_message(
 			embed=embed(
-				title=f'\"{name}\" by {publisher} placed at #{placement} on the {display_name}!',
+				title=f'\"{level_name}\" by {publisher} placed at #{placement} on the {display_name}!',
 				description=audit_description,
 				footer=f'Level ID: {level_id}',
 				color=Colour.green()
 			)
 		)
 
-	@command(name='creator', description='Add a creator to a level')
+	@command(name='creator', description='Add a player\'s creator credit to a level')
 	@guild_only()
 	@limit_command
 	@restrict_command(arg='level_id')
@@ -118,23 +121,28 @@ class AddGroup(Group, name='add'):
 		if not (player_data := await execute_get('SELECT player_id, player_name FROM players WHERE player_name = %s', (creator,))):
 			return await interaction.response.send_message(embed=error_embed(f'Player **{creator}** is not registered yet! Use `/add player` first.'), ephemeral=True)
 
-		player_id, player_name = player_data[0]
+		player_id, creator = player_data[0]
+		existing = await execute_get('SELECT is_creator FROM creators WHERE level_id = %s AND player_id = %s', (level_id, player_id))
 
-		if existing := await execute_get('SELECT is_publisher FROM creators WHERE level_id = %s AND player_id = %s', (level_id, player_id)):
-			return await interaction.response.send_message(embed=error_embed(f'**{player_name}** is {'the publisher' if existing[0][0] else 'already a creator'} of this level!'), ephemeral=True)
+		if existing and existing[0][0]:
+			return await interaction.response.send_message(embed=error_embed(f'**{creator}** is already a creator of this level!'), ephemeral=True)
 
-		await execute_write('INSERT INTO creators (level_id, player_id, is_publisher) VALUES (%s, %s, 0)', (level_id, player_id))
-		await interaction.response.send_message(embed=success_embed(f'Added **{player_name}** as a creator of \"**{level_name}**\" by {publisher}!'))
+		if existing:
+			await execute_write('UPDATE creators SET is_creator = TRUE WHERE level_id = %s AND player_id = %s', (level_id, player_id))
+		else:
+			await execute_write('INSERT INTO creators (level_id, player_id, is_creator, is_publisher) VALUES (%s, %s, TRUE, FALSE)', (level_id, player_id))
+
+		await interaction.response.send_message(embed=success_embed(f'Gave **{creator}** creator credit on \"**{level_name}**\" by {publisher}!'))
 
 	@command(name='victor', description='Add/Update a victor to/of a level')
 	@guild_only()
 	@limit_command
 	@restrict_command(arg='level_id')
 	@rename(level_id='id')
-	@autocomplete(level_id=level_autocomplete, player_name=player_name_autocomplete)
+	@autocomplete(level_id=level_autocomplete, victor=player_name_autocomplete)
 	@smart_describe()
 	@log_command
-	async def add_victor(self, interaction: Interaction, level_id: LevelIDInt, player_name: str, is_mobile: bool, percentage: Optional[PercentageInt] = None, time: Optional[str] = None) -> None:
+	async def add_victor(self, interaction: Interaction, level_id: LevelIDInt, victor: str, is_mobile: bool, percentage: Optional[PercentageInt] = None, time: Optional[str] = None) -> None:
 		result = await execute_get('''
 		SELECT l.level_name, p.player_name, l.list_percentage, li.record_mode, li.use_list_percentage
         FROM levels l
@@ -166,12 +174,12 @@ class AddGroup(Group, name='add'):
 			if time is None:
 				return await interaction.response.send_message(embed=error_embed('This list uses time records. Please, provide a completion time!'), ephemeral=True)
 
-		if not (player_data := await execute_get('SELECT player_id FROM players WHERE player_name = %s', (player_name,))):
-			return await interaction.response.send_message(embed=error_embed(f'Player **{player_name}** is not registered yet! Use `/add player` first :)'), ephemeral=True)
+		if not (player_data := await execute_get('SELECT player_id FROM players WHERE player_name = %s', (victor,))):
+			return await interaction.response.send_message(embed=error_embed(f'Player **{victor}** is not registered yet! Use `/add player` first :)'), ephemeral=True)
 
 		if record_status := await execute_get('SELECT is_verifier FROM records WHERE level_id = %s AND player_id = %s', (level_id, player_data[0][0])):
 			if record_status[0][0] and use_list_percentage:
-				return await interaction.response.send_message(embed=error_embed(f'**{player_name}** is the verifier of this level!'), ephemeral=True)
+				return await interaction.response.send_message(embed=error_embed(f'**{victor}** is the verifier of this level!'), ephemeral=True)
 
 		progress: str = f'{percentage}%'
 		if record_mode == 'percentage':
@@ -192,7 +200,7 @@ class AddGroup(Group, name='add'):
 			except DataError:
 				return await interaction.response.send_message(embed=error_embed(f'The time isn\'t in an correct format!'), ephemeral=True)
 
-		await interaction.response.send_message(embed=success_embed(f'Added/Updated record for **{player_name}** (**{progress}**) on \"**{level_name}**\" by {publisher}!'))
+		await interaction.response.send_message(embed=success_embed(f'Added/Updated record for **{victor}** (**{progress}**) on \"**{level_name}**\" by {publisher}!'))
 
 	@command(name='player', description='Register a new player to the database')
 	@guild_only()
