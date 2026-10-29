@@ -19,6 +19,7 @@ async def execute_get(code: str, parameters: Optional[Any] = None):
 	cursor = connection.cursor()
 
 	try:
+		cursor.execute('SET time_zone = \'+00:00\'')
 		cursor.execute(code, parameters)
 		return cursor.fetchall()
 	finally:
@@ -31,6 +32,7 @@ async def execute_write(code: str, parameters: Optional[Any] = None):
 	cursor = connection.cursor()
 
 	try:
+		cursor.execute('SET time_zone = \'+00:00\'')
 		cursor.execute(code, parameters)
 		connection.commit()
 	finally:

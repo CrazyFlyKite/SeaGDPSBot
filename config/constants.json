@@ -2,66 +2,24 @@
 	"logging_format": "[%(levelname)s]: %(message)s",
 	"database": "seagdps",
 	"developer_id": 873920068571000833,
-	"difficulties": {
-		"Easy Demon": 1,
-		"Medium Demon": 2,
-		"Hard Demon": 3,
-		"Insane Demon": 4,
-		"Extreme Demon": 5
-	},
-	"ratings": {
-		"Star Rate": 1,
-		"Featured": 2,
-		"Epic": 3,
-		"Legendary": 4,
-		"Mythic": 5
-	},
 	"described_parameters": {
-		"list_id": "List (Demonlist, Pemonlist…)",
-		"level_id": "Level ID",
-		"placement": "Placement on the list",
-		"new_placement": "New placement on the list",
-		"level_name": "Level name",
-		"new_level_name": "New level name",
-		"creator": "Level creator",
-		"publisher": "Level publisher",
-		"victor": "Level victor",
-		"verifier": "Level verifier",
-		"new_verifier": "New level verifier",
-		"difficulty": "Level difficulty",
-		"new_difficulty": "New level difficulty",
-		"rating": "Level rating",
-		"new_rating": "New level rating",
-		"is_2p": "Is 2-player mode",
-		"list_percentage": "List %",
-		"new_list_percentage": "New list %",
-		"is_mobile": "Whether the player play on mobile",
+		"level_id": "Level name/ID",
+		"completion_link": "Proof of your completion (YouTube, Catbox & Medal links only)",
+		"is_mobile": "Whether you play on mobile",
 		"percentage": "%",
 		"time": "Time (Format: HH:MM:SS.mmm)",
-		"old_player_name": "Old player name",
-		"new_player_name": "New player name",
-		"player_nationality": "Player nationality",
-		"thumbnail": "Level thumbnail",
-		"showcase": "Level showcase"
+		"name": "Player name",
+		"old_name": "Old player name",
+		"new_name": "New player name",
+		"discord_profile": "Player's Discord account",
+		"nationality": "Player's nationality"
 	},
-	"allowed_image_formats": {
-		"allowed_extension": [
-			".jpg",
-			".jpeg",
-			".png",
-			".webp"
-		],
-		"allowed_types": [
-			"image/jpeg",
-			"image/png",
-			"image/webp"
-		]
-	},
-	"allowed_showcase_links": [
-		"https://www.youtube.com/watch?v=",
-		"https://youtu.be/",
-		"https://files.catbox.moe/"
+	"url_regexes": [
+		"^https://www\\.youtube\\.com/watch\\?v=[a-zA-Z0-9_-]{11}\\??.*$",
+		"^https://youtu\\.be/[a-zA-Z0-9_-]{11}\\??.*$",
+		"^https://files\\.catbox\\.moe/[a-zA-Z0-9]{6}\\.mp4$",
+		"^https://medal\\.tv/.*$"
 	],
-	"allowed_level_name_characters": "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890 ",
-	"countries_link": "https://crazyflykite.com/other/countries.json"
+	"time_regexes": "^\\d{2}:[0-5]\\d:[0-5]\\d\\.\\d{3}$"
+
 }

@@ -28,7 +28,7 @@ def limit_command(command: Callable) -> Callable:
 	async def wrapper(*args, **kwargs) -> None:
 		interaction = args[1] if len(args) > 1 else args[0]
 
-		if interaction.channel.id in [channel[0] for channel in await execute_get('SELECT channel_id FROM channels')]:
+		if str(interaction.channel.id) in [channel[0] for channel in await execute_get('SELECT channel_id FROM channels')]:
 			await command(*args, **kwargs)
 		else:
 			await interaction.response.send_message(embed=error_embed('You cannot use my commands in this channel!'), ephemeral=True)
@@ -45,11 +45,11 @@ def restrict_command(arg: Optional[str] = None, lookup_by_list: Optional[bool] =
 			if interaction.user.id == DEVELOPER_ID:
 				return await command(*args, **kwargs)
 
-			user_role_ids: Set[int] = {role.id for role in interaction.user.roles}
+			user_role_ids: Set[str] = {str(role.id) for role in interaction.user.roles}
 
 			if arg is None:
 				result = await execute_get('SELECT DISTINCT moderator_role_id FROM lists')
-				allowed_role_ids: Set[int] = {row[0] for row in result if row[0] is not None}
+				allowed_role_ids: Set[str] = {row[0] for row in result if row[0] is not None}
 
 				if user_role_ids & allowed_role_ids:
 					return await command(*args, **kwargs)

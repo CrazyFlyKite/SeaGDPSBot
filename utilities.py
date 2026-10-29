@@ -1,19 +1,13 @@
 import json
-import platform
 from os import getenv
-from typing import List, Dict, Any, Final, TypeAlias, Tuple
+from re import compile, Pattern
+from typing import List, Dict, Any, Final, TypeAlias
 
-from discord.app_commands import Choice, Range
+from discord.app_commands import Range
 from dotenv import load_dotenv
 
-# Load the local environment
-load_dotenv()
-
 # Custom types
-LevelIDInt: TypeAlias = Range[int, 1000]
 PercentageInt: TypeAlias = Range[int, 1, 100]
-PlacementInt: TypeAlias = Range[int, 1]
-
 
 # Secrets
 def require_env(name: str) -> str:
@@ -23,13 +17,13 @@ def require_env(name: str) -> str:
 	return value
 
 
-TOKEN: Final[str] = require_env('LIVE_TOKEN') if getenv('ENV') == 'LIVE' else require_env('DEV_TOKEN')
+load_dotenv()
+TOKEN: Final[str] = require_env('TOKEN')
 MYSQL_USER: Final[str] = require_env('MYSQL_USER')
 MYSQL_PASSWORD: Final[str] = require_env('MYSQL_PASSWORD')
-THUMBNAIL_PATH: Final[str] = require_env('THUMBNAIL_PATH')
 
 # Checking IP
-IS_NAS: Final[bool] = platform.system() == 'Linux'
+IS_NAS: Final[bool] = require_env('ENV') == 'LIVE'
 HOST_IP: Final[str] = '172.17.0.1' if IS_NAS else require_env('SERVER_IP')
 
 # Constants
@@ -39,14 +33,9 @@ with open('config/constants.json', 'r', encoding='utf-8') as file:
 LOGGING_FORMAT: Final[str] = config.get('logging_format', '')
 DATABASE: Final[str] = config.get('database', '')
 DEVELOPER_ID: Final[int] = config.get('developer_id', 0)
-DIFFICULTIES: Final[List[Choice]] = [Choice(name=name, value=value) for name, value in config.get('difficulties', {}).items()]
-RATINGS: Final[List[Choice]] = [Choice(name=name, value=value) for name, value in config.get('ratings', {}).items()]
 DESCRIBED_PARAMETERS: Final[Dict[str, str]] = config.get('described_parameters', [])
-ALLOWED_EXTENSIONS: Final[Tuple[str, ...]] = tuple(config.get('allowed_image_formats', {}).get('allowed_extension', []))
-ALLOWED_TYPES: Final[Tuple[str, ...]] = tuple(config.get('allowed_image_formats', {}).get('allowed_types', []))
-ALLOWED_SHOWCASE_LINKS: Final[List[str]] = config.get('allowed_showcase_links', [])
-ALLOWED_LEVEL_NAME_CHARACTERS: Final[str] = config.get('allowed_level_name_characters', '')
-COUNTRIES_LINK: Final[str] = config.get('countries_link', '')
+URL_REGEXES: Final[List[Pattern]] = [compile(pattern) for pattern in config.get('url_regexes', [])]
+TIME_REGEX: Final[Pattern] = config.get('time_regex', '')
 
 with open('config/info_template.md', 'r', encoding='utf-8') as file:
-	INFORMATION_MESSAGE: Final[str] = file.read()
+	INFORMATION_MESSAGE: Final[str] = file.read().rstrip()

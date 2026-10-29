@@ -1,11 +1,17 @@
 # Changelog
 
+# 4.0.0 | 29.10.2026
+
+- Removed almost everything because almost everything got moved to the website
+- Added `/submit` command and renamed others
+- Added audit log
+
 ## 3.2.1 | 22.09.2026
 
 - Separated creators from publishers
 - Added level name constraints
 
-## 3.2 | 20.09.2026
+## 3.2.0 | 20.09.2026
 
 - Added mobile functionality
 - Added `/ban add` & `/ban remove` commands

@@ -1,34 +1,15 @@
-I manage the official SeaGDPS Demonlists.
+I manage the official SeaGDPS Demonlists :3
 
 ## Public Commands
 - `/info` - Show information about the bot
+- `/submit` - Submit a record
 
 ## Restricted Commands
-- `/add level` - Add a level to the list
-- `/add creator` - Add a player's creator credit to a level
-- `/add victor` - Add/Update a victor to/of a level
-- `/add player` - Register a new player to the database
-
-- `/move level` - Move a level to a new placement
-
-- `/remove level` - Remove a level from the list
-- `/remove creator` - Remove a player's creator credit from a level
-- `/remove victor` - Remove a victor from a level
-
-- `/edit name` - Edit the name of a level
-- `/edit publisher` - Edit the publisher of a level
-- `/edit verifier` - Edit the verifier of a level
-- `/edit difficulty` - Edit the difficulty of a level
-- `/edit rating` - Edit the rating of a level
-- `/edit list_percentage` - Edit the list % of a level
-- `/edit player_name` - Edit a player's name
-- `/edit player_nationality` - Edit a player's nationality
-
-- `/set thumbnail` - Add, remove or edit the thumbnail to a level
-- `/set showcase` - Add, remove or edit the showcase of a level
-
-- `/ban add` - Ban a player
-- `/ban remove` - Unban a player
+- `/register` - Register a new player
+- `/edit name` - Edit a player's name
+- `/edit nationality` - Edit a player's nationality
+- `/ban` - Ban a player
+- `/unban` - Unban a player
 
 ## More
 - **[Website](<https://crazyflykite.com/seagdps>)**

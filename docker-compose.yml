@@ -7,5 +7,4 @@ services:
         restart: always
         volumes:
             - .:/app
-            - /volume1/shared/seagdps/thumbnails:/thumbnails
         network_mode: host

@@ -19,19 +19,14 @@
 ## File Structure
 
 - [`main.py`](main.py) - Main entry point
+- [`ui.py`](ui.py) - Discord UI buttons setup
+- [`audit_log.py`] - Audit log for database changes
 - [`decorators.py`](decorators.py) - Custom wrapper functions for commands
 - [`database.py`](database.py) - Functions for database interactions
 - [`embeds.py`](embeds.py) - Custom embed templates for Discord messages
-- [`help_functions.py`](help_functions.py) - Custom functions for commands
+- [`helpers.py`](helpers.py) - Custom functions for commands
 - [`utilities.py`](utilities.py) - Constants and platform detection
 - [`setup_logging.py`](setup_logging.py) - Enhanced terminal logging
-
-
-- [`commands/add_group.py`](commands/add_group.py) - Commands for adding information to the database
-- [`commands/remove_group.py`](commands/remove_group.py) - Commands for removing information from the database
-- [`commands/move_group.py`](commands/move_group.py) - Commands for moving information in the database
-- [`commands/edit_group.py`](commands/edit_group.py) - Commands for editing information in the database
-- [`commands/set_group.py`](commands/set_group.py) - Commands for adding, removing and editing information in the database all at the same time
 
 ## Host
 
@@ -44,14 +39,9 @@ This project requires an `.env` file which looks like this:
 
 ```dotenv
 ENV=DEV/LIVE
-LIVE_TOKEN=???
-DEV_TOKEN=???
-
-THUMBNAILS_PATH=/???/thumbnails
-
+TOKEN=???
 MYSQL_USER=???
 MYSQL_PASSWORD=???
-
 SERVER_IP=???.???.???.???
 ```
 
@@ -60,4 +50,4 @@ SERVER_IP=???.???.???.???
 - **[My Website](https://crazyflykite.com)**
 - **[Discord](https://discord.com/users/873920068571000833)**
 - **[GitHub](https://github.com/CrazyFlyKite)**
-- **[Email](mailto:karpenkoartem2846@gmail.com)**
+- **[Email](mailto:contact@crazyflykite.com)**
